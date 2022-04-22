@@ -14,7 +14,7 @@ from validators import CreateProductoSchema
 
 def crear_conexion():
     try:
-        conexion = pymysql.connect(host='localhost',user='root',passwd='',db="talle_e" )
+        conexion = pymysql.connect(host='localhost',user='root',passwd='',db="database_user" )
         return conexion
     except pymysql.Error as error:
         print('Se ha producido un error al crear la conexión:', error)
@@ -25,6 +25,7 @@ create_login_schema = CreateLoginSchema()
 create_producto_schema = CreateProductoSchema()
 class RegisterControllers(MethodView):
     def post(self):
+        rol="user"
         content = request.get_json()
         email = content.get("email")
         nombres = content.get("nombres")
@@ -45,7 +46,7 @@ class RegisterControllers(MethodView):
         auto=cursor.fetchone()
         if auto==None:
             cursor.execute(
-                 "INSERT INTO usuarios (Correo,Nombres,Apellidos,Password,Documento) VALUES(%s,%s,%s,%s,%s)", (email,nombres,apellidos,hash_password,documento,))
+                 "INSERT INTO usuarios (Correo,Nombres,Apellidos,Password,Documento,Rol) VALUES(%s,%s,%s,%s,%s,%s)", (email,nombres,apellidos,hash_password,documento,rol,))
             conexion.commit()
             conexion.close()
             return jsonify({"Status": "Bienvenido registro exitoso"}), 200
