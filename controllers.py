@@ -1,74 +1,74 @@
 
 from flask.views import MethodView
 from flask import jsonify, request, session
-from model import users
+#from model import users
 import hashlib
-import bcrypt # pip3 install bcrypt
-import jwt # pip3 install pyjwt
+import pymysql
+import bcrypt
+import jwt
 from config import KEY_TOKEN_AUTH
 import datetime
-import pymysql
 from validators import CreateRegisterSchema
+from validators import CreateLoginSchema
+from validators import CreateProductoSchema
 
 def crear_conexion():
     try:
-        #conexion a la db
-        conexion = pymysql.connect(host='localhost',user='root',passwd='',db="tiendaarqsoft" )
+        conexion = pymysql.connect(host='localhost',user='root',passwd='',db="talle_e" )
         return conexion
     except pymysql.Error as error:
         print('Se ha producido un error al crear la conexión:', error)
 
 
+create_register_schema = CreateRegisterSchema()
+create_login_schema = CreateLoginSchema()
+create_producto_schema = CreateProductoSchema()
 class RegisterControllers(MethodView):
-    """
-        Example register
-    """
     def post(self):
         content = request.get_json()
-        create_register_schema = CreateRegisterSchema()
-                
+        email = content.get("email")
+        nombres = content.get("nombres")
+        apellidos = content.get("apellidos")
+        password = content.get("password")
+        documento= content.get("cedula")
+        ##print("--------",email, nombres,apellidos,password,documento)
+        salt = bcrypt.gensalt()
+        hash_password = bcrypt.hashpw(bytes(str(password), encoding= 'utf-8'), salt)
         errors = create_register_schema.validate(content)
         if errors:
             return errors, 400
-        correo = content.get("email")
-        password = content.get("password")
-        nombres = content.get("nombre")
-        salt = bcrypt.gensalt()
-        hash_password = bcrypt.hashpw(bytes(str(password), encoding= 'utf-8'), salt)
-        print(hash_password)
         conexion=crear_conexion()
         print(conexion)
         cursor = conexion.cursor()
         cursor.execute(
-            "SELECT clave,correo FROM registro_usuario WHERE correo=%s", (correo, ))
+            "SELECT Password,Correo FROM usuarios WHERE correo=%s", (email, ))
         auto=cursor.fetchone()
         if auto==None:
             cursor.execute(
-                 "INSERT INTO registro_usuario(correo,nombre,clave) VALUES(%s,%s,%s)", (correo,nombres,hash_password,))
+                 "INSERT INTO usuarios (Correo,Nombres,Apellidos,Password,Documento) VALUES(%s,%s,%s,%s,%s)", (email,nombres,apellidos,hash_password,documento,))
             conexion.commit()
             conexion.close()
-            return ("bienvenido registro exitoso")
+            return jsonify({"Status": "Bienvenido registro exitoso"}), 200
         else :    
             conexion.commit()
             conexion.close()
-            print( "el usuario ya esta registrado")
-            return ("el usuario ya esta registrado")
-
-
+            return jsonify({"Status": "El usuario ya esta registrado"}), 200
 
 class LoginControllers(MethodView):
-    """
-        Example Login
-    """
     def post(self):
         content = request.get_json()
+        #Instanciar la clase
+        create_login_schema = CreateLoginSchema()
+        errors = create_login_schema.validate(content)
+        if errors:
+            return errors, 400
         clave = content.get("password")
         correo = content.get("email")
-        print("--------", users, content.get("clave"), correo)
+        print(content.get("password"), correo)
         conexion=crear_conexion()
         cursor = conexion.cursor()
         cursor.execute(
-            "SELECT clave,correo,nombre FROM registro_usuario WHERE correo=%s", (correo, )
+            "SELECT Password,Correo,Nombres,Apellidos FROM usuarios WHERE correo=%s", (correo,)
         )
         auto = cursor.fetchone()
         conexion.close()
@@ -78,42 +78,45 @@ class LoginControllers(MethodView):
         
         if (auto[1]==correo):
             if  bcrypt.checkpw(clave.encode('utf8'), auto[0].encode('utf8')):
-                encoded_jwt = jwt.encode({'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=300), 'email': correo,'Rol':"User"}, KEY_TOKEN_AUTH , algorithm='HS256')
-                return jsonify({"Status": "loguin exitoso","usuario: "+auto[2]+"token": encoded_jwt}), 200
+                encoded_jwt = jwt.encode({'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=300), 'email': correo}, KEY_TOKEN_AUTH , algorithm='HS256')
+                return jsonify({"Status": "login exitoso","into": encoded_jwt}), 200
         else:
-            return jsonify({"Status": "correo o clave incorrecta"}), 400
-#############################################
+            return jsonify({"Status": "Correo o Clave incorrecta"}), 400
 
+## para modulo admin, creacion de productos
+# class CrearControllers(MethodView):
+#     def post(self):
+#         content = request.get_json()
+#         precio = content.get("precio")
+#         nombre = content.get("nombre")
+#         if (request.headers.get('Authorization')):
+#                 token = request.headers.get("Authorization").split(" ")
+#                 try:
+#                     decoded_jwt = jwt.decode(token[1], KEY_TOKEN_AUTH , algorithms=['HS256'])
+#                     errors = create_producto_schema.validate(content)
+#                     if errors:
+#                         return errors, 400
+#                     conexion=crear_conexion()
+#                     cursor = conexion.cursor()
+#                     cursor.execute("INSERT INTO productos (Nombre,Precio) VALUES(%s,%s)", (nombre,precio,))
+#                     conexion.commit()
+#                     conexion.close()
+#                     return jsonify({"Status": "Autorizado por token", "Nuevo producto": "ok"}), 200
+#                 except:
+#                     return jsonify({"Status": "Token invalido"}), 400
+#         return jsonify({"Status": "No ha enviado un token"}), 403
+        
 
+## para el modulo de tienda cargar los productos de la base de datos
 
-class JsonControllers(MethodView):
-    """
-        Example Json
-    """
-    def post(self):
-        content = request.get_json()
-        nombres = content.get("nombres")
-        return jsonify({"Status": "JSON recibido y procesado correctamente","nombre": nombres}), 200
-
-
-class StockControllers(MethodView):
-    """
-        Example verify Token
-    """
-    def get(self):
-        if (request.headers.get('Authorization')):
-            token = request.headers.get('Authorization').split(" ")
-            print("-----------------_", token[1])
-            try:
-                data = jwt.decode(token[1], KEY_TOKEN_AUTH , algorithms=['HS256'])
-                conexion=crear_conexion()
-                cursor = conexion.cursor()
-                cursor.execute("SELECT clave,correo,nombre FROM registro_usuario WHERE correo=%s", (token[1], ))
-                auto = cursor.fetchone()
-                conexion.close()
-                print("si estafuncionando")
-                return jsonify({"Status": "Autorizado por token", "emailextraido": data.get("email"), "stock": auto}), 200
-                return jsonify({"Status": "Autorizado por token", "emailextraido": data.get("email"),}), 200
-            except:
-                return jsonify({"Status": "TOKEN NO VALIDO"}), 403
-        return jsonify({"Status": "No ha enviado un token"}), 403
+# class ProductosControllers(MethodView):
+#     def get(self):
+#         #consulta base de datos
+#         conexion=crear_conexion()
+#         cursor = conexion.cursor()
+#         cursor.execute("SELECT * FROM productos")
+#         conexion.commit()
+#         conexion.close()
+#         auto=cursor.fetchall()
+#         print("productos facturados",auto)
+#         return jsonify(auto), 200
