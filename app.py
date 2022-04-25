@@ -6,9 +6,8 @@ app = Flask(__name__)
 
 CORS(app, resources={r"/*": {"origins": "*"}})
 
-
 app.add_url_rule(routes["register"], view_func=routes["register_controllers"])
 app.add_url_rule(routes["login"], view_func=routes["login_controllers"])
-app.add_url_rule(routes["crear"], view_func=routes["crear_controllers"])
-app.add_url_rule(routes["productos"], view_func=routes["productos_controllers"])
+#app.add_url_rule(routes["crear"], view_func=routes["crear_controllers"])
+#app.add_url_rule(routes["productos"], view_func=routes["productos_controllers"])
 

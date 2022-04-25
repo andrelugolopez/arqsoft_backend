@@ -10,7 +10,7 @@ from config import KEY_TOKEN_AUTH
 import datetime
 from validators import CreateRegisterSchema
 from validators import CreateLoginSchema
-from validators import CreateProductoSchema
+#from validators import CreateProductoSchema
 
 def crear_conexion():
     try:
@@ -22,7 +22,7 @@ def crear_conexion():
 
 create_register_schema = CreateRegisterSchema()
 create_login_schema = CreateLoginSchema()
-create_producto_schema = CreateProductoSchema()
+#create_producto_schema = CreateProductoSchema()
 class RegisterControllers(MethodView):
     def post(self):
         rol="user"
@@ -32,7 +32,7 @@ class RegisterControllers(MethodView):
         apellidos = content.get("apellidos")
         password = content.get("password")
         documento= content.get("cedula")
-        ##print("--------",email, nombres,apellidos,password,documento)
+        print("--------",email, nombres,apellidos,password,documento)
         salt = bcrypt.gensalt()
         hash_password = bcrypt.hashpw(bytes(str(password), encoding= 'utf-8'), salt)
         errors = create_register_schema.validate(content)
@@ -42,11 +42,11 @@ class RegisterControllers(MethodView):
         print(conexion)
         cursor = conexion.cursor()
         cursor.execute(
-            "SELECT Password,Correo FROM usuarios WHERE correo=%s", (email, ))
+            "SELECT Password,Email FROM usuarios WHERE Email=%s", (email, ))
         auto=cursor.fetchone()
         if auto==None:
             cursor.execute(
-                 "INSERT INTO usuarios (Correo,Nombres,Apellidos,Password,Documento,Rol) VALUES(%s,%s,%s,%s,%s,%s)", (email,nombres,apellidos,hash_password,documento,rol,))
+                 "INSERT INTO usuarios (Email,Nombres,Apellidos,Password,Documento,Rol) VALUES(%s,%s,%s,%s,%s,%s)", (email,nombres,apellidos,hash_password,documento,rol,))
             conexion.commit()
             conexion.close()
             return jsonify({"Status": "Bienvenido registro exitoso"}), 200
@@ -69,7 +69,7 @@ class LoginControllers(MethodView):
         conexion=crear_conexion()
         cursor = conexion.cursor()
         cursor.execute(
-            "SELECT Password,Correo,Nombres,Apellidos FROM usuarios WHERE correo=%s", (correo,)
+            "SELECT Password,Email,Nombres,Apellidos FROM usuarios WHERE Email=%s", (correo,)
         )
         auto = cursor.fetchone()
         conexion.close()
