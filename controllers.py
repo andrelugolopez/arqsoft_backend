@@ -3,7 +3,7 @@ from flask.views import MethodView
 from flask import jsonify, request, session
 #from model import users
 import hashlib
-import pymysql
+import pymysql.cursors
 import bcrypt
 import jwt
 from config import KEY_TOKEN_AUTH
@@ -18,6 +18,14 @@ def crear_conexion():
         return conexion
     except pymysql.Error as error:
         print('Se ha producido un error al crear la conexión:', error)
+
+#SE VA A CAMBIAR POR UNA BASE DE DATOS NO RELACIONAL - MONGODB
+def crear_conexion_productos():
+    try:
+        conexion = pymysql.connect(host='localhost',user='root',passwd='',db="pruebatienda",charset='utf8mb4')
+        return conexion
+    except pymysql.Error as error:
+        print('Se ha producido un error al crear la conexión:', error)        
 
 
 create_register_schema = CreateRegisterSchema()
@@ -109,15 +117,20 @@ class LoginControllers(MethodView):
         
 
 ## para el modulo de tienda cargar los productos de la base de datos
+#http://127.0.0.1:5000/productos/R o P o E
 
-# class ProductosControllers(MethodView):
-#     def get(self):
-#         #consulta base de datos
-#         conexion=crear_conexion()
-#         cursor = conexion.cursor()
-#         cursor.execute("SELECT * FROM productos")
-#         conexion.commit()
-#         conexion.close()
-#         auto=cursor.fetchall()
-#         print("productos facturados",auto)
-#         return jsonify(auto), 200
+class ProductosControllers(MethodView):
+    def get(self):
+        idproduc= request.headers.get("idproducto") # asi es que envia por cabecera la categoría seleccionada - headers idproducto - R001
+        #consulta base de datos
+        conexion=crear_conexion_productos()
+        cursor = conexion.cursor()
+        #Se formatea la consulta y se envia parametro de consulta en un arreglo
+        cursor.execute(
+            f"select * from productos where idproducto like '{idproduc}%'"   
+            );
+          
+        auto=cursor.fetchall()
+        print("Lista de productos",auto)
+        conexion.close()
+        return jsonify({'data':auto}), 200
