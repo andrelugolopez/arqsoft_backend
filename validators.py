@@ -17,9 +17,10 @@ class CreateLoginSchema(Schema):
     email      = fields.Str(required=True, validate=validate.Email())
 
 class CreateProductoSchema(Schema):
-    precio = fields.Int(required=True, validate=validate.Range(min=1, max=1000000))
-    nombre = fields.Str(required=True, validate=validate.Length(min=1, max=200))
-
+    precio      = fields.Int(required=True, validate=validate.Range(min=1, max=1000000))
+    cantidad    = fields.Int(required=True, validate=validate.Range(min=1, max=10000))
+    nombres     = fields.Str(required=True, validate=validate.Length(min=1, max=200))
+    idproducto = fields.Str(required=True, validate=validate.Range(min=1, max=10))
 
 
 
