@@ -10,27 +10,29 @@ from config import KEY_TOKEN_AUTH
 import datetime
 from validators import CreateRegisterSchema
 from validators import CreateLoginSchema
-#from validators import CreateProductoSchema
+from validators import CreateProductoSchema
+
 
 def crear_conexion():
     try:
-        conexion = pymysql.connect(host='localhost',user='root',passwd='',db="database_user" )
+        conexion = pymysql.connect(host='localhost',user='root',passwd='',db="database_user",charset='utf8mb4' )
         return conexion
     except pymysql.Error as error:
         print('Se ha producido un error al crear la conexión:', error)
 
-#SE VA A CAMBIAR POR UNA BASE DE DATOS NO RELACIONAL - MONGODB
-def crear_conexion_productos():
+def crear_conexionMongo():
     try:
         conexion = pymysql.connect(host='localhost',user='root',passwd='',db="pruebatienda",charset='utf8mb4')
         return conexion
     except pymysql.Error as error:
-        print('Se ha producido un error al crear la conexión:', error)        
+        print('Se ha producido un error al crear la conexión:', error)
 
 
 create_register_schema = CreateRegisterSchema()
 create_login_schema = CreateLoginSchema()
-#create_producto_schema = CreateProductoSchema()
+create_producto_schema = CreateProductoSchema()
+
+
 class RegisterControllers(MethodView):
     def post(self):
         rol="user"
@@ -77,44 +79,19 @@ class LoginControllers(MethodView):
         conexion=crear_conexion()
         cursor = conexion.cursor()
         cursor.execute(
-            "SELECT Password,Email,Nombres,Apellidos FROM usuarios WHERE Email=%s", (correo,)
+            "SELECT Password,Email,Nombres,Apellidos,Rol FROM usuarios WHERE Email=%s", (correo,)
         )
         auto = cursor.fetchone()
         conexion.close()
-        print(auto)
         if auto==None:
-            return jsonify({"Status": "usuario no registrado 22"}), 400
+            return jsonify({"Status": "usuario no registrado 22"}), 403
         
         if (auto[1]==correo):
             if  bcrypt.checkpw(clave.encode('utf8'), auto[0].encode('utf8')):
-                encoded_jwt = jwt.encode({'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=300), 'email': correo}, KEY_TOKEN_AUTH , algorithm='HS256')
+                encoded_jwt = jwt.encode({'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=3600), 'email': correo,'rol':auto[4]}, KEY_TOKEN_AUTH , algorithm='HS256')
                 return jsonify({"Status": "login exitoso","into": encoded_jwt}), 200
-        else:
-            return jsonify({"Status": "Correo o Clave incorrecta"}), 400
-
-## para modulo admin, creacion de productos
-# class CrearControllers(MethodView):
-#     def post(self):
-#         content = request.get_json()
-#         precio = content.get("precio")
-#         nombre = content.get("nombre")
-#         if (request.headers.get('Authorization')):
-#                 token = request.headers.get("Authorization").split(" ")
-#                 try:
-#                     decoded_jwt = jwt.decode(token[1], KEY_TOKEN_AUTH , algorithms=['HS256'])
-#                     errors = create_producto_schema.validate(content)
-#                     if errors:
-#                         return errors, 400
-#                     conexion=crear_conexion()
-#                     cursor = conexion.cursor()
-#                     cursor.execute("INSERT INTO productos (Nombre,Precio) VALUES(%s,%s)", (nombre,precio,))
-#                     conexion.commit()
-#                     conexion.close()
-#                     return jsonify({"Status": "Autorizado por token", "Nuevo producto": "ok"}), 200
-#                 except:
-#                     return jsonify({"Status": "Token invalido"}), 400
-#         return jsonify({"Status": "No ha enviado un token"}), 403
-        
+            else:
+                return jsonify({"Status": "Clave incorrecta"}), 400
 
 ## para el modulo de tienda cargar los productos de la base de datos
 #http://127.0.0.1:5000/productos/R o P o E
@@ -123,14 +100,62 @@ class ProductosControllers(MethodView):
     def get(self):
         idproduc= request.headers.get("idproducto") # asi es que envia por cabecera la categoría seleccionada - headers idproducto - R001
         #consulta base de datos
-        conexion=crear_conexion_productos()
+        conexion=crear_conexionMongo()
         cursor = conexion.cursor()
         #Se formatea la consulta y se envia parametro de consulta en un arreglo
         cursor.execute(
-            f"select * from productos where idproducto like '{idproduc}%'"   
-            );
-          
+            f"select * from productos where idproducto like '{idproduc}%'");
         auto=cursor.fetchall()
         print("Lista de productos",auto)
+        conexion.commit()
         conexion.close()
         return jsonify({'data':auto}), 200
+
+## consulta a la base de datos el producto y se le agrega al usuario
+
+class ProductoIdControllers(MethodView):
+    def get(self):
+        id_producto = request.headers.get("idproducto") ## se espera llegada de id del producto
+        print("***** Id a consultar", id_producto)
+        conexion=crear_conexionMongo()
+        cursor = conexion.cursor()
+        cursor.execute(
+            "SELECT idproducto,nombre,cantidad,precio,imagen FROM productos WHERE idproducto=%s", (id_producto,))
+        dato=cursor.fetchone()
+        print("dato del producto",dato)
+        conexion.commit()
+        conexion.close()
+        if dato==None:
+            return jsonify({"Status": "articulo no esta creado 33"}), 403
+        return jsonify({'status':'envio ok','data':dato}), 200
+
+## para modulo admin, creacion de productos
+class CrearControllers(MethodView):
+    def post(self):
+        print ("crear producto en la tienda")
+        content = request.get_json()
+        id_producto=content.get("idproducto")
+        precio = content.get("precio")
+        nombre = content.get("nombre")
+        cantidad= content.get("cantidad")
+        imagen=content.get("imagen")
+        errors = create_producto_schema.validate(content)
+        if errors:
+            return jsonify({"Status":errors }), 400
+        if (request.headers.get('Authorization')):
+            token = request.headers.get('Authorization').split(" ")
+            try:
+                data = jwt.decode(token[1], KEY_TOKEN_AUTH , algorithms=['HS256'])
+                if (data.get('rol')=='admin'):
+                    conexion=crear_conexionMongo()
+                    cursor = conexion.cursor()
+                    cursor.execute("INSERT INTO productos (idproducto,nombre,cantidad,precio,imagen) VALUES(%s,%s,%s,%s,%s)", (id_producto,nombre,cantidad,precio,imagen,))
+                    conexion.commit()
+                    conexion.close()
+                    print("--Artuculo guardado en la BD--")
+                else:
+                    return jsonify({"Status": "No autorizado por token"}), 403
+                return jsonify({"Status": "Autorizado por token", "emailextraido": data.get("email"),}), 200
+            except:
+                return jsonify({"Status": "TOKEN NO VALIDO"}), 403
+        return jsonify({"Status": "No ha enviado un token"}), 403
