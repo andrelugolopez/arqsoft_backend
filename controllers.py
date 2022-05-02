@@ -84,7 +84,7 @@ class LoginControllers(MethodView):
         auto = cursor.fetchone()
         conexion.close()
         if auto==None:
-            return jsonify({"Status": "usuario no registrado 22"}), 400
+            return jsonify({"Status": "usuario no registrado 22"}), 403
         
         if (auto[1]==correo):
             if  bcrypt.checkpw(clave.encode('utf8'), auto[0].encode('utf8')):
@@ -115,26 +115,26 @@ class ProductosControllers(MethodView):
 
 class ProductoIdControllers(MethodView):
     def get(self):
-        id_producto = request.args.get('id') ## se espera llegada de id del producto
+        id_producto = request.headers.get("idproducto") ## se espera llegada de id del producto
+        print("***** Id a consultar", id_producto)
         conexion=crear_conexionMongo()
         cursor = conexion.cursor()
-        #Se formatea la consulta y se envia parametro de consulta en un arreglo
         cursor.execute(
             "SELECT idproducto,nombre,cantidad,precio,imagen FROM productos WHERE idproducto=%s", (id_producto,))
-        auto=cursor.fetchall()
-        print("Lista de productos",auto)
+        dato=cursor.fetchone()
+        print("dato del producto",dato)
         conexion.commit()
         conexion.close()
-        return jsonify({'data':auto}), 200
-
-        return jsonify({"pendiente para retorno"}), 200
+        if dato==None:
+            return jsonify({"Status": "articulo no esta creado 33"}), 403
+        return jsonify({'status':'envio ok','data':dato}), 200
 
 ## para modulo admin, creacion de productos
 class CrearControllers(MethodView):
     def post(self):
         print ("crear producto en la tienda")
         content = request.get_json()
-        idproducto=content.get("idproducto")
+        id_producto=content.get("idproducto")
         precio = content.get("precio")
         nombre = content.get("nombre")
         cantidad= content.get("cantidad")
@@ -149,7 +149,7 @@ class CrearControllers(MethodView):
                 if (data.get('rol')=='admin'):
                     conexion=crear_conexionMongo()
                     cursor = conexion.cursor()
-                    cursor.execute("INSERT INTO productos (idproducto,nombre,cantidad,precio,imagen) VALUES(%s,%s,%s,%s,%s)", (idproducto,nombre,cantidad,precio,imagen,))
+                    cursor.execute("INSERT INTO productos (idproducto,nombre,cantidad,precio,imagen) VALUES(%s,%s,%s,%s,%s)", (id_producto,nombre,cantidad,precio,imagen,))
                     conexion.commit()
                     conexion.close()
                     print("--Artuculo guardado en la BD--")
