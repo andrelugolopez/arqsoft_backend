@@ -1,3 +1,11 @@
+# nombres usados para seguridad
+# envio de token = into
+# nombre de usuario = Nuat
+# rol =n3yB6PZnGE8n7F
+# admin=J8p4SBfJgRfZCo
+# tecnico=H7qm7gQr6DBGfM
+# usuario=hbh2jFVsQM7RUy
+
 
 from flask.views import MethodView
 from flask import jsonify, request, session
@@ -34,7 +42,7 @@ create_login_schema = CreateLoginSchema()
 
 class RegisterControllers(MethodView):
     def post(self):
-        rol="user"
+        rol="hbh2jFVsQM7RUy"
         content = request.get_json()
         email = content.get("email")
         nombres = content.get("nombres")
@@ -55,7 +63,7 @@ class RegisterControllers(MethodView):
         auto=cursor.fetchone()
         if auto==None:
             cursor.execute(
-                 "INSERT INTO usuarios (Email,Nombres,Apellidos,Password,Documento,Rol) VALUES(%s,%s,%s,%s,%s,%s)", (email,nombres,apellidos,hash_password,documento,rol,))
+                 "INSERT INTO usuarios (Email,Nombres,Apellidos,Password,Documento,Rol) VALUES(%s,%s,%s,%s,%s,%s)", (email.lower(),nombres.capitalize(),apellidos.capitalize(),hash_password,documento,rol,))
             conexion.commit()
             conexion.close()
             return jsonify({"Status": "Bienvenido registro exitoso"}), 200
@@ -93,7 +101,7 @@ class LoginControllers(MethodView):
                     'user':auto[2] ,
                     'rol':auto[4]}, 
                     KEY_TOKEN_AUTH , algorithm='HS256')
-                return jsonify({"Status": "login exitoso","into": encoded_jwt}), 200
+                return jsonify({"Status": "login exitoso","into": encoded_jwt,'Nuat':auto[2],'n3yB6PZnGE8n7F':auto[4]}), 200
             else:
                 return jsonify({"Status": "Clave incorrecta"}), 400
 
@@ -162,11 +170,10 @@ class CrearControllers(MethodView):
         return jsonify({"Status": "No ha enviado un token"}), 403
 
 ## para modulo admin, eliminar de productos
-class EliminarControllers(MethodView):
-    def post(self):
+class EliminarProductoControllers(MethodView):
+    def get(self):
+        idproducto= request.args.get("idproe")
         print ("eliminar producto de la tienda")
-        content = request.get_json()
-        id_producto=content.get("idproducto")
         if (request.headers.get('Authorization')):
             token = request.headers.get('Authorization').split(" ")
             try:
@@ -174,7 +181,30 @@ class EliminarControllers(MethodView):
                 if (data.get('rol')=='admin'):
                     conexion=crear_conexionMongo()
                     cursor = conexion.cursor()
-                    cursor.execute("DELETE FROM productos WHERE idproducto=%s",(id_producto,))
+                    cursor.execute("DELETE FROM productos WHERE idproducto=%s",(idproducto,))
+                    conexion.commit()
+                    conexion.close()
+                    print("--Artuculo eliminado de la BD--")
+                else:
+                    return jsonify({"Status": "No autorizado por token"}), 403
+                return jsonify({"Status": "Autorizado por token", "emailextraido": data.get("email"),}), 200
+            except:
+                return jsonify({"Status": "TOKEN NO VALIDO"}), 403
+        return jsonify({"Status": "No ha enviado un token"}), 403
+
+## para modulo admin, eliminar de productos
+class EliminarUserControllers(MethodView):
+    def get(self):
+        correo= request.args.get("correo")
+        print ("eliminar usuario del sistema")
+        if (request.headers.get('Authorization')):
+            token = request.headers.get('Authorization').split(" ")
+            try:
+                data = jwt.decode(token[1], KEY_TOKEN_AUTH , algorithms=['HS256'])
+                if (data.get('rol')=='admin'):
+                    conexion=crear_conexion()
+                    cursor = conexion.cursor()
+                    cursor.execute("DELETE FROM usuarios WHERE Email=%s",(correo,))
                     conexion.commit()
                     conexion.close()
                     print("--Artuculo eliminado de la BD--")
