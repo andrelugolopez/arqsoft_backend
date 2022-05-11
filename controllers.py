@@ -23,6 +23,7 @@ from validators import CreateLoginSchema
 def crear_conexion():
     try:
         conexion = pymysql.connect(host='201.190.114.194',user='root',password='secret',port= 39009,db="database_user",charset='utf8mb4' )
+
         return conexion
     except pymysql.Error as error:
         print('Se ha producido un error al crear la conexión:', error)
@@ -37,7 +38,7 @@ def crear_conexion():
 
 def crear_conexionMongo():
     try:
-        conexion = pymysql.connect(host='localhost',user='root',passwd='',db="pruebatienda",charset='utf8mb4')
+        conexion = pymysql.connect(host='localhost',user='root',passwd='Sena1234',db="pruebatienda",charset='utf8mb4')
         return conexion
     except pymysql.Error as error:
         print('Se ha producido un error al crear la conexión:', error)
@@ -50,9 +51,6 @@ create_login_schema = CreateLoginSchema()
 class RegisterControllers(MethodView):
     def post(self):
         print ("registro de usuarios admin y tecnicos")
-
-        idcarrito=485
-
         rol="hbh2jFVsQM7RUy"
         content = request.get_json()
         email = content.get("email")
@@ -74,16 +72,13 @@ class RegisterControllers(MethodView):
         auto=cursor.fetchone()
         if auto==None:
             cursor.execute(
-                 #"INSERT INTO usuarios (Email,Nombres,Apellidos,Password,Documento,Rol) VALUES(%s,%s,%s,%s,%s,%s)", (email.lower(),nombres.capitalize(),apellidos.capitalize(),hash_password,documento,rol,))
-                 "INSERT INTO usuarios (correo,nombres,apellidos,clave,documento,rol) VALUES(%s,%s,%s,%s,%s,%s)", (email.lower(),nombres.capitalize(),apellidos.capitalize(),hash_password,documento,rol,))
-            conexion.commit()
+                "INSERT INTO usuarios (correo,nombres,apellidos,clave,documento,rol) VALUES(%s,%s,%s,%s,%s,%s)", (email.lower(),nombres.capitalize(),apellidos.capitalize(),hash_password,documento,rol,))
             conexion.close()
             return jsonify({"Status": "Bienvenido registro exitoso"}), 200
         else :    
             conexion.commit()
             conexion.close()
             return jsonify({"Status": "El usuario ya esta registrado"}), 200
-
 class LoginControllers(MethodView):
     def post(self):
         print ("login y creacion de jwt para navegacion")
@@ -206,7 +201,8 @@ class EliminarProductoControllers(MethodView):
                 return jsonify({"Status": "TOKEN NO VALIDO"}), 403
         return jsonify({"Status": "No ha enviado un token"}), 403
 
-## para modulo admin, eliminar de usuarios
+## para modulo admin, eliminar de productos
+
 class EliminarUserControllers(MethodView):
     def get(self):
         correo= request.args.get("correo")
@@ -227,6 +223,7 @@ class EliminarUserControllers(MethodView):
                 return jsonify({"Status": "Autorizado por token", "emailextraido": data.get("email"),}), 200
             except:
                 return jsonify({"Status": "TOKEN NO VALIDO"}), 403
+
         return jsonify({"Status": "No ha enviado un token"}), 403
 #UPDATE `usuarios` SET `Nombres` = 'Manuela', `Apellidos` = 'Madrid Caro' WHERE `usuarios`.`Email` = 'manuelacaro@gmail.com';
 ## para modulo admin, eliminar de usuarios
