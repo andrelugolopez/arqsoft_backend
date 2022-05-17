@@ -20,21 +20,21 @@ import datetime
 from validators import CreateRegisterSchema
 from validators import CreateLoginSchema
 
-def crear_conexion():
-    try:
-        conexion = pymysql.connect(host='201.190.114.194',user='root',password='secret',port= 39009,db="database_user",charset='utf8mb4' )
-
-        return conexion
-    except pymysql.Error as error:
-        print('Se ha producido un error al crear la conexión:', error)
-
-
 # def crear_conexion():
 #     try:
-#         conexion = pymysql.connect(host='localhost',user='root',passwd='',db="database_user",charset='utf8mb4' )
+#         conexion = pymysql.connect(host='201.190.114.194',user='root',password='secret',port= 39009,db="database_user",charset='utf8mb4' )
+
 #         return conexion
 #     except pymysql.Error as error:
 #         print('Se ha producido un error al crear la conexión:', error)
+
+
+def crear_conexion():
+    try:
+        conexion = pymysql.connect(host='localhost',user='root',passwd='Sena1234',db="database_user",charset='utf8mb4' )
+        return conexion
+    except pymysql.Error as error:
+        print('Se ha producido un error al crear la conexión:', error)
 
 def crear_conexionMongo():
     try:
@@ -93,11 +93,15 @@ class LoginControllers(MethodView):
         print(content.get("password"), correo)
         conexion=crear_conexion()
         cursor = conexion.cursor()
+        # cursor.execute(
+        #     "SELECT clave,correo,nombres,apellidos,rol,documento FROM usuarios WHERE correo=%s", (correo,)
+        # )
         cursor.execute(
-            "SELECT clave,correo,nombres,apellidos,rol FROM usuarios WHERE correo=%s", (correo,)
+            "SELECT Password,Email,Nombres,Apellidos,Rol,Documento FROM usuarios WHERE Email=%s", (correo,)
         )
         auto = cursor.fetchone()
         conexion.close()
+        print( "datos", auto)
         if auto==None:
             return jsonify({"Status": "usuario no registrado 22"}), 403
         
@@ -109,7 +113,7 @@ class LoginControllers(MethodView):
                     'user':auto[2] ,
                     'rol':auto[4]}, 
                     KEY_TOKEN_AUTH , algorithm='HS256')
-                return jsonify({"Status": "login exitoso","into": encoded_jwt,'Nuat':auto[2],'n3yB6PZnGE8n7F':auto[4]}), 200
+                return jsonify({"Status": "login exitoso","into": encoded_jwt,'Nuat':auto[2],'n3yB6PZnGE8n7F':auto[4],'doc': auto[5]}), 200
             else:
                 return jsonify({"Status": "Clave incorrecta"}), 400
 
