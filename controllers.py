@@ -29,8 +29,6 @@ from validators import CreateLoginSchema
 #     except pymysql.Error as error:
 #         print('Se ha producido un error al crear la conexión:', error)
 
-## conexion local
-def crear_conexion():
     try:
         conexion = pymysql.connect(host='localhost',user='root',passwd='',db="database_user",charset='utf8mb4' )
         return conexion
@@ -151,12 +149,13 @@ class LoginControllers(MethodView):
         # cursor.execute(
         #     "SELECT clave,correo,nombres,apellidos,rol,documento FROM usuarios WHERE correo=%s", (correo,)
         # )
-        ## consulta local
+
         cursor.execute(
             "SELECT Password,Email,Nombres,Apellidos,Rol,Documento FROM usuarios WHERE Email=%s", (correo,)
         )
         auto = cursor.fetchone()
         conexion.close()
+        print( "datos", auto)
         if auto==None:
             return jsonify({"Status": "usuario no registrado 22"}), 403
         
@@ -168,6 +167,8 @@ class LoginControllers(MethodView):
                     'user':auto[2] ,
                     'rol':auto[4]}, 
                     KEY_TOKEN_AUTH , algorithm='HS256')
+
+
                 return jsonify({"Status": "login exitoso","into": encoded_jwt,'Nuat':auto[2],'n3yB6PZnGE8n7F':auto[4],'doc':auto[5]}), 200
             else:
                 return jsonify({"Status": "Clave incorrecta"}), 400
