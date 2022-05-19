@@ -11,6 +11,7 @@ from flask.views import MethodView
 from flask import jsonify, request, session
 #from model import users
 import hashlib
+import pymongo
 import pymysql.cursors
 import bcrypt
 import jwt
@@ -20,37 +21,88 @@ import datetime
 from validators import CreateRegisterSchema
 from validators import CreateLoginSchema
 
-def crear_conexion():
-    try:
-        conexion = pymysql.connect(host='201.190.114.194',user='root',password='secret',port= 39009,db="database_user",charset='utf8mb4' )
-
-        return conexion
-    except pymysql.Error as error:
-        print('Se ha producido un error al crear la conexión:', error)
-
-
 # def crear_conexion():
 #     try:
-#         conexion = pymysql.connect(host='localhost',user='root',passwd='',db="database_user",charset='utf8mb4' )
+#         conexion = pymysql.connect(host='201.190.114.194',user='root',password='secret',port= 39009,db="database_user",charset='utf8mb4' )
+
 #         return conexion
 #     except pymysql.Error as error:
 #         print('Se ha producido un error al crear la conexión:', error)
 
-def crear_conexionMongo():
+## conexion local
+def crear_conexion():
     try:
-        conexion = pymysql.connect(host='localhost',user='root',passwd='Sena1234',db="pruebatienda",charset='utf8mb4')
+        conexion = pymysql.connect(host='localhost',user='root',passwd='',db="database_user",charset='utf8mb4' )
         return conexion
     except pymysql.Error as error:
         print('Se ha producido un error al crear la conexión:', error)
+
+def crear_conexionMongo():
+    # MONGO_HOST="201.190.114.194"
+    # MONGO_PUERTO="39011"
+    # MONGO_TIEMPO_FUERA=1000
+    # MONGO_URI="mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/"
+    try:
+        # cliente=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
+        # cliente.server_info()
+        # print("Conexion a mongo exitosa")
+        # cliente.close()
+
+        conexion = pymysql.connect(host='localhost',user='root',passwd='',db="pruebatienda",charset='utf8mb4')
+        return conexion
+    except pymysql.Error as error:
+        print('Se ha producido un error al crear la conexión sql:', error)
+    # except pymongo.errors.ServerSelectionTimeoutError as errorTiempo:
+    #     print("Tiempo excedido  ",errorTiempo)
+    # except pymongo.errors.ConnectionFailure as errorConexion:
+    #     print("Fallo al conectarse a mongodb ",errorConexion) 
+
+   
 
 
 create_register_schema = CreateRegisterSchema()
 create_login_schema = CreateLoginSchema()
 
 
+# class RegisterControllers(MethodView):
+#     def post(self):
+#         print ("registro de usuarios admin y tecnicos")
+#         rol="hbh2jFVsQM7RUy"
+#         content = request.get_json()
+#         email = content.get("email")
+#         nombres = content.get("nombres")
+#         apellidos = content.get("apellidos")
+#         password = content.get("password")
+#         documento= content.get("cedula")
+#         print("--------",email, nombres,apellidos,password,documento)
+#         salt = bcrypt.gensalt()
+#         hash_password = bcrypt.hashpw(bytes(str(password), encoding= 'utf-8'), salt)
+#         errors = create_register_schema.validate(content)
+#         if errors:
+#             return errors, 400
+#         conexion=crear_conexion()
+#         print(conexion)
+#         cursor = conexion.cursor()
+#         # cursor.execute(
+#         #     "SELECT clave,correo FROM usuarios WHERE correo=%s", (email, ))
+#         cursor.execute(
+#             "SELECT Password,Email FROM usuarios WHERE Email=%s", (email, ))
+#         auto=cursor.fetchone()
+#         if auto==None:
+#             # cursor.execute(
+#             #     "INSERT INTO usuarios (correo,nombres,apellidos,clave,documento,rol) VALUES(%s,%s,%s,%s,%s,%s)", (email.lower(),nombres.capitalize(),apellidos.capitalize(),hash_password,documento,rol,))
+#             cursor.execute(
+#                 "INSERT INTO usuarios (Email,Nombres,Apellidos,Password,Documento,Rol) VALUES(%s,%s,%s,%s,%s,%s)", (email.lower(),nombres.capitalize(),apellidos.capitalize(),hash_password,documento,rol,))
+#             conexion.close()
+#             return jsonify({"Status": "Bienvenido registro exitoso"}), 200
+#         else :    
+#             conexion.commit()
+#             conexion.close()
+#             return jsonify({"Status": "El usuario ya esta registrado"}), 200
+
+
 class RegisterControllers(MethodView):
     def post(self):
-        print ("registro de usuarios admin y tecnicos")
         rol="hbh2jFVsQM7RUy"
         content = request.get_json()
         email = content.get("email")
@@ -68,17 +120,20 @@ class RegisterControllers(MethodView):
         print(conexion)
         cursor = conexion.cursor()
         cursor.execute(
-            "SELECT clave,correo FROM usuarios WHERE correo=%s", (email, ))
+            "SELECT Password,Email FROM usuarios WHERE Email=%s", (email, ))
         auto=cursor.fetchone()
         if auto==None:
             cursor.execute(
-                "INSERT INTO usuarios (correo,nombres,apellidos,clave,documento,rol) VALUES(%s,%s,%s,%s,%s,%s)", (email.lower(),nombres.capitalize(),apellidos.capitalize(),hash_password,documento,rol,))
+                 "INSERT INTO usuarios (Email,Nombres,Apellidos,Password,Documento,Rol) VALUES(%s,%s,%s,%s,%s,%s)", (email.lower(),nombres.capitalize(),apellidos.capitalize(),hash_password,documento,rol,))
+            conexion.commit()
             conexion.close()
             return jsonify({"Status": "Bienvenido registro exitoso"}), 200
         else :    
             conexion.commit()
             conexion.close()
             return jsonify({"Status": "El usuario ya esta registrado"}), 200
+            
+
 class LoginControllers(MethodView):
     def post(self):
         print ("login y creacion de jwt para navegacion")
@@ -93,8 +148,12 @@ class LoginControllers(MethodView):
         print(content.get("password"), correo)
         conexion=crear_conexion()
         cursor = conexion.cursor()
+        # cursor.execute(
+        #     "SELECT clave,correo,nombres,apellidos,rol,documento FROM usuarios WHERE correo=%s", (correo,)
+        # )
+        ## consulta local
         cursor.execute(
-            "SELECT clave,correo,nombres,apellidos,rol FROM usuarios WHERE correo=%s", (correo,)
+            "SELECT Password,Email,Nombres,Apellidos,Rol,Documento FROM usuarios WHERE Email=%s", (correo,)
         )
         auto = cursor.fetchone()
         conexion.close()
@@ -109,7 +168,7 @@ class LoginControllers(MethodView):
                     'user':auto[2] ,
                     'rol':auto[4]}, 
                     KEY_TOKEN_AUTH , algorithm='HS256')
-                return jsonify({"Status": "login exitoso","into": encoded_jwt,'Nuat':auto[2],'n3yB6PZnGE8n7F':auto[4]}), 200
+                return jsonify({"Status": "login exitoso","into": encoded_jwt,'Nuat':auto[2],'n3yB6PZnGE8n7F':auto[4],'doc':auto[5]}), 200
             else:
                 return jsonify({"Status": "Clave incorrecta"}), 400
 
@@ -147,7 +206,7 @@ class ProductoIdControllers(MethodView):
         conexion.commit()
         conexion.close()
         if dato==None:
-            return jsonify({"Status": "articulo no esta creado 33"}), 403
+            return jsonify({"Status": "articulo no esta creado 33"}), 201
         return jsonify({'status':'envio ok','data':dato}), 200
 
 ## para modulo admin, creacion de productos
@@ -164,7 +223,7 @@ class CrearControllers(MethodView):
             token = request.headers.get('Authorization').split(" ")
             try:
                 data = jwt.decode(token[1], KEY_TOKEN_AUTH , algorithms=['HS256'])
-                if (data.get('rol')=='admin'):
+                if (data.get('rol')=='J8p4SBfJgRfZCo'):
                     conexion=crear_conexionMongo()
                     cursor = conexion.cursor()
                     cursor.execute("INSERT INTO productos (idproducto,nombre,cantidad,precio,imagen) VALUES(%s,%s,%s,%s,%s)", (id_producto,nombre,cantidad,precio,imagen,))
@@ -225,48 +284,4 @@ class EliminarUserControllers(MethodView):
                 return jsonify({"Status": "TOKEN NO VALIDO"}), 403
 
         return jsonify({"Status": "No ha enviado un token"}), 403
-#UPDATE `usuarios` SET `Nombres` = 'Manuela', `Apellidos` = 'Madrid Caro' WHERE `usuarios`.`Email` = 'manuelacaro@gmail.com';
-## para modulo admin, eliminar de usuarios
-# class ActualizarUserControllers(MethodView):
-#     def post(self):
-#         content = request.get_json()
-#         email = content.get("email")
-#         conexion=crear_conexion()
-#         cursor = conexion.cursor()
-#         cursor.execute("SELECT Email,Nombres,Apellidos,Rol FROM usuarios WHERE Email=%s", (correo,))
-#         conexion.commit()
-#         conexion.close()
-#         print("-- datos leidos de la BD --")
-#         nombres = content.get("nombres")
-#         apellidos = content.get("apellidos")
-#         documento= content.get("cedula")
-#         rol= content.get("rol")
-#         telefono = content.get("rol")
-#         errors = create_register_schema.validate(content)
-#         if errors:
-#             return errors, 400
-#         conexion=crear_conexion()
-#         print(conexion)
-#         cursor = conexion.cursor()
-#         cursor.execute(
-#             "SELECT Password,Email FROM usuarios WHERE Email=%s", (email, ))
-#         auto=cursor.fetchone()
-#         print ("actualiar usuario en el sistema")
-#         if (request.headers.get('Authorization')):
-#             token = request.headers.get('Authorization').split(" ")
-#             try:
-#                 data = jwt.decode(token[1], KEY_TOKEN_AUTH , algorithms=['HS256'])
-#                 if (data.get('rol')=='admin'):
-#                     conexion=crear_conexion()
-#                     cursor = conexion.cursor()
-#                     # cursor.execute("DELETE FROM usuarios WHERE Email=%s",(correo,))
-#                     cursor.execute(UPDATE `usuarios` SET `Nombres` = 'Manuela', `Apellidos` = 'Madrid Caro' WHERE `usuarios`.`Email` = 'manuelacaro@gmail.com')
-#                     conexion.commit()
-#                     conexion.close()
-#                     print("--Artuculo eliminado de la BD--")
-#                 else:
-#                     return jsonify({"Status": "No autorizado por token"}), 403
-#                 return jsonify({"Status": "Autorizado por token", "emailextraido": data.get("email"),}), 200
-#             except:
-#                 return jsonify({"Status": "TOKEN NO VALIDO"}), 403
-#         return jsonify({"Status": "No ha enviado un token"}), 403
+
