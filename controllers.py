@@ -283,6 +283,5 @@ class EliminarUserControllers(MethodView):
                 return jsonify({"Status": "Autorizado por token", "emailextraido": data.get("email"),}), 200
             except:
                 return jsonify({"Status": "TOKEN NO VALIDO"}), 403
-
         return jsonify({"Status": "No ha enviado un token"}), 403
 
