@@ -11,7 +11,7 @@ from flask.views import MethodView
 from flask import jsonify, request, session
 #from model import users
 import hashlib
-import pymongo
+# import pymongo
 import pymysql.cursors
 import bcrypt
 import jwt
@@ -28,9 +28,9 @@ from validators import CreateLoginSchema
 #         return conexion
 #     except pymysql.Error as error:
 #         print('Se ha producido un error al crear la conexión:', error)
-
+def crear_conexion():
     try:
-        conexion = pymysql.connect(host='localhost',user='root',passwd='',db="database_user",charset='utf8mb4' )
+        conexion = pymysql.connect(host='localhost',user='root',passwd='Sena1234',db="database_user",charset='utf8mb4' )
         return conexion
     except pymysql.Error as error:
         print('Se ha producido un error al crear la conexión:', error)
@@ -46,7 +46,7 @@ def crear_conexionMongo():
         # print("Conexion a mongo exitosa")
         # cliente.close()
 
-        conexion = pymysql.connect(host='localhost',user='root',passwd='',db="pruebatienda",charset='utf8mb4')
+        conexion = pymysql.connect(host='localhost',user='root',passwd='Sena1234',db="pruebatienda",charset='utf8mb4')
         return conexion
     except pymysql.Error as error:
         print('Se ha producido un error al crear la conexión sql:', error)
