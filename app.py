@@ -13,4 +13,7 @@ app.add_url_rule(routes["crear"], view_func=routes["crear_controllers"])
 app.add_url_rule(routes["eliminar"], view_func=routes["eliminar_producto_controllers"])
 app.add_url_rule(routes["productos"], view_func=routes["productos_controllers"])
 app.add_url_rule(routes["productoId"], view_func=routes["productoId_controllers"])
-
+app.add_url_rule(routes["cambioClave"], view_func=routes["cambioClave_controllers"])
+app.add_url_rule(routes["ordenServicio"], view_func=routes["ordenServicio_controllers"])
+app.add_url_rule(routes["asignacionTecnico"], view_func=routes["asignacionTecnico_controllers"])
+app.add_url_rule(routes["tokenContrasena"], view_func=routes["tokenContrasena_controllers"])
