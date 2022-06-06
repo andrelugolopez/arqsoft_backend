@@ -10,7 +10,7 @@
 from flask.views import MethodView
 from flask import jsonify, request, session
 import hashlib
-# import pymongo
+import pymongo
 import pymysql.cursors
 import bcrypt
 import jwt
@@ -21,50 +21,29 @@ import random
 from validators import CreateRegisterSchema
 from validators import CreateLoginSchema
 
-
 def crear_conexion():
     try:
         conexion = pymysql.connect(host='jhtserverconnection.ddns.net',user='root',password='secret',port= 39009,db="database_user",charset='utf8mb4' )
-
-# def crear_conexion():
-#     try:
-#         conexion = pymysql.connect(host='201.190.114.194',user='root',password='secret',port= 39009,db="database_user",charset='utf8mb4' )
-
-#         return conexion
-#     except pymysql.Error as error:
-#         print('Se ha producido un error al crear la conexión:', error)
-
-# def crear_conexionMongo():
-#     MONGO_HOST="jhtserverconnection.ddns.net"
-#     MONGO_PUERTO="39011"
-#     MONGO_TIEMPO_FUERA=1000
-#     MONGO_URI="mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/"
-#     try:
-#         cliente=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
-#         cliente.server_info()
-#         print("Conexion a mongo exitosa")
-#         ###cliente.close()
-#         ##return conexion
-#     except pymongo.errors.ServerSelectionTimeoutError as errorTiempo:
-#         print("Tiempo excedido  ",errorTiempo)
-#     except pymongo.errors.ConnectionFailure as errorConexion:
-#         print("Fallo al conectarse a mongodb ",errorConexion)
-
-        # cliente=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
-        # cliente.server_info()
-        # print("Conexion a mongo exitosa")
-        # cliente.close()
-
-        conexion = pymysql.connect(host='localhost',user='root',passwd='Sena1234',db="pruebatienda",charset='utf8mb4')
         return conexion
     except pymysql.Error as error:
-        print('Se ha producido un error al crear la conexión sql:', error)
-    # except pymongo.errors.ServerSelectionTimeoutError as errorTiempo:
-    #     print("Tiempo excedido  ",errorTiempo)
-    # except pymongo.errors.ConnectionFailure as errorConexion:
-    #     print("Fallo al conectarse a mongodb ",errorConexion) 
+        print('Se ha producido un error al crear la conexión:', error)
+        
 
-   
+def crear_conexionMongo():
+    MONGO_HOST="jhtserverconnection.ddns.net"
+    MONGO_PUERTO="39011"
+    MONGO_TIEMPO_FUERA=1000
+    MONGO_URI="mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/"
+    try:
+        cliente=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
+        cliente.server_info()
+        print("Conexion a mongo exitosa")
+        ###cliente.close()
+        ##return conexion
+    except pymongo.errors.ServerSelectionTimeoutError as errorTiempo:
+        print("Tiempo excedido  ",errorTiempo)
+    except pymongo.errors.ConnectionFailure as errorConexion:
+        print("Fallo al conectarse a mongodb ",errorConexion)
 
 create_register_schema = CreateRegisterSchema()
 create_login_schema = CreateLoginSchema()
@@ -283,7 +262,6 @@ class CambioClaveControllers(MethodView):
 class OrdenServicioControllers(MethodView):
     def post(self):
         content = request.get_json()
-        #Campos del formulario
         nombre = content.get("nombre")
         telefono = content.get("telefono")
         cedula = content.get("cedula")
