@@ -17,7 +17,7 @@ import jwt
 from config import KEY_TOKEN_AUTH
 import datetime
 import random
-
+import korreo
 from validators import CreateRegisterSchema
 from validators import CreateLoginSchema
 
@@ -136,32 +136,36 @@ class ProductosControllers(MethodView):
         myquery = { "idproducto": { "$regex": Tproducto } }
         productos = mycol.find(myquery)
 
-        for x in productos:
-          print("+++++++",x)
-
-        #producos = [data for data in mycol.find()]
-        #conexion.close()
+        keys = ["_id"]
+        output = []
+        for producto in productos:
+            output.append({x:producto[x] for x in producto if x not in keys})
+        print(output)
         print("Lista de productos",productos)
-        return jsonify({'data':productos}), 200
+        return jsonify({'data':output}), 200
 
 ## consulta a la base de datos el producto y se le agrega al usuario
 
 #http://127.0.0.1:5000/productoId/id_producto=?R120 o P349 o E998
 class ProductoIdControllers(MethodView):
-    def post(self):
-        content = request.get_json()
-        id_producto =content.get("idproducto") ## se espera llegada de id del producto
-        conexion=crear_conexionMongo()
-        cursor = conexion.cursor()
-        cursor.execute(
-            "SELECT idproducto,nombre,cantidad,precio,imagen,descripcion FROM productos WHERE idproducto=%s", (id_producto,))
-        dato=cursor.fetchone()
-        conexion.commit() 
-        conexion.close()
-        if dato==None:
-            return jsonify({"Status": "articulo no esta creado"}), 201
-        print("dato del producto",dato)
-        return jsonify({'status':'envio ok','data':dato}), 200
+    def get(self):
+        print ("consulta todos los productos de la tienda")
+        id_producto=request.args.get("idproducto") # asi es que envia por cabecera la categoría seleccionada - headers idproducto - R001
+        MONGO_HOST="jhtserverconnection.ddns.net"
+        MONGO_PUERTO="39011"
+        MONGO_TIEMPO_FUERA=1000
+        MONGO_URI="mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/"
+        producto=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
+
+        mydb = producto["dbproductos"]
+        mycol = mydb["productos"]
+
+        myquery = { "idproducto": { "$regex": id_producto } }
+        info = mycol.find(myquery)
+        keys = ["_id"]
+        producto=producto not in keys
+        print("dato del producto",producto)
+        return jsonify({'status':'envio ok','data':producto}), 200
 
 ## para modulo admin, creacion de productos
 class CrearControllers(MethodView):
