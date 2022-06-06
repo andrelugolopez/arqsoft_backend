@@ -9,7 +9,6 @@
 
 from flask.views import MethodView
 from flask import jsonify, request, session
-#from model import users
 import hashlib
 # import pymongo
 import pymysql.cursors
@@ -17,9 +16,15 @@ import bcrypt
 import jwt
 from config import KEY_TOKEN_AUTH
 import datetime
+import random
 
 from validators import CreateRegisterSchema
 from validators import CreateLoginSchema
+
+
+def crear_conexion():
+    try:
+        conexion = pymysql.connect(host='jhtserverconnection.ddns.net',user='root',password='secret',port= 39009,db="database_user",charset='utf8mb4' )
 
 # def crear_conexion():
 #     try:
@@ -28,19 +33,23 @@ from validators import CreateLoginSchema
 #         return conexion
 #     except pymysql.Error as error:
 #         print('Se ha producido un error al crear la conexión:', error)
-def crear_conexion():
-    try:
-        conexion = pymysql.connect(host='localhost',user='root',passwd='Sena1234',db="database_user",charset='utf8mb4' )
-        return conexion
-    except pymysql.Error as error:
-        print('Se ha producido un error al crear la conexión:', error)
 
-def crear_conexionMongo():
-    # MONGO_HOST="201.190.114.194"
-    # MONGO_PUERTO="39011"
-    # MONGO_TIEMPO_FUERA=1000
-    # MONGO_URI="mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/"
-    try:
+# def crear_conexionMongo():
+#     MONGO_HOST="jhtserverconnection.ddns.net"
+#     MONGO_PUERTO="39011"
+#     MONGO_TIEMPO_FUERA=1000
+#     MONGO_URI="mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/"
+#     try:
+#         cliente=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
+#         cliente.server_info()
+#         print("Conexion a mongo exitosa")
+#         ###cliente.close()
+#         ##return conexion
+#     except pymongo.errors.ServerSelectionTimeoutError as errorTiempo:
+#         print("Tiempo excedido  ",errorTiempo)
+#     except pymongo.errors.ConnectionFailure as errorConexion:
+#         print("Fallo al conectarse a mongodb ",errorConexion)
+
         # cliente=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
         # cliente.server_info()
         # print("Conexion a mongo exitosa")
@@ -57,46 +66,8 @@ def crear_conexionMongo():
 
    
 
-
 create_register_schema = CreateRegisterSchema()
 create_login_schema = CreateLoginSchema()
-
-
-# class RegisterControllers(MethodView):
-#     def post(self):
-#         print ("registro de usuarios admin y tecnicos")
-#         rol="hbh2jFVsQM7RUy"
-#         content = request.get_json()
-#         email = content.get("email")
-#         nombres = content.get("nombres")
-#         apellidos = content.get("apellidos")
-#         password = content.get("password")
-#         documento= content.get("cedula")
-#         print("--------",email, nombres,apellidos,password,documento)
-#         salt = bcrypt.gensalt()
-#         hash_password = bcrypt.hashpw(bytes(str(password), encoding= 'utf-8'), salt)
-#         errors = create_register_schema.validate(content)
-#         if errors:
-#             return errors, 400
-#         conexion=crear_conexion()
-#         print(conexion)
-#         cursor = conexion.cursor()
-#         # cursor.execute(
-#         #     "SELECT clave,correo FROM usuarios WHERE correo=%s", (email, ))
-#         cursor.execute(
-#             "SELECT Password,Email FROM usuarios WHERE Email=%s", (email, ))
-#         auto=cursor.fetchone()
-#         if auto==None:
-#             # cursor.execute(
-#             #     "INSERT INTO usuarios (correo,nombres,apellidos,clave,documento,rol) VALUES(%s,%s,%s,%s,%s,%s)", (email.lower(),nombres.capitalize(),apellidos.capitalize(),hash_password,documento,rol,))
-#             cursor.execute(
-#                 "INSERT INTO usuarios (Email,Nombres,Apellidos,Password,Documento,Rol) VALUES(%s,%s,%s,%s,%s,%s)", (email.lower(),nombres.capitalize(),apellidos.capitalize(),hash_password,documento,rol,))
-#             conexion.close()
-#             return jsonify({"Status": "Bienvenido registro exitoso"}), 200
-#         else :    
-#             conexion.commit()
-#             conexion.close()
-#             return jsonify({"Status": "El usuario ya esta registrado"}), 200
 
 
 class RegisterControllers(MethodView):
@@ -118,20 +89,19 @@ class RegisterControllers(MethodView):
         print(conexion)
         cursor = conexion.cursor()
         cursor.execute(
-            "SELECT Password,Email FROM usuarios WHERE Email=%s", (email, ))
+            "SELECT clave,correo FROM usuarios WHERE correo=%s", (email, ))
         auto=cursor.fetchone()
         if auto==None:
             cursor.execute(
-                 "INSERT INTO usuarios (Email,Nombres,Apellidos,Password,Documento,Rol) VALUES(%s,%s,%s,%s,%s,%s)", (email.lower(),nombres.capitalize(),apellidos.capitalize(),hash_password,documento,rol,))
+                 "INSERT INTO usuarios (correo,nombres,apellidos,clave,documento,rol) VALUES(%s,%s,%s,%s,%s,%s)", (email.lower(),nombres.capitalize(),apellidos.capitalize(),hash_password,documento,rol,))
             conexion.commit()
             conexion.close()
-            return jsonify({"Status": "Bienvenido registro exitoso"}), 200
+            return jsonify({"Status": "Bienvenido registro exitoso"}), 201
         else :    
             conexion.commit()
             conexion.close()
             return jsonify({"Status": "El usuario ya esta registrado"}), 200
             
-
 class LoginControllers(MethodView):
     def post(self):
         print ("login y creacion de jwt para navegacion")
@@ -146,18 +116,14 @@ class LoginControllers(MethodView):
         print(content.get("password"), correo)
         conexion=crear_conexion()
         cursor = conexion.cursor()
-        # cursor.execute(
-        #     "SELECT clave,correo,nombres,apellidos,rol,documento FROM usuarios WHERE correo=%s", (correo,)
-        # )
-
         cursor.execute(
-            "SELECT Password,Email,Nombres,Apellidos,Rol,Documento FROM usuarios WHERE Email=%s", (correo,)
+            "SELECT clave,correo,nombres,apellidos,rol,documento FROM usuarios WHERE correo=%s", (correo,)
         )
         auto = cursor.fetchone()
         conexion.close()
         print( "datos", auto)
         if auto==None:
-            return jsonify({"Status": "usuario no registrado 22"}), 403
+            return jsonify({"Status": "usuario no registrado"}), 400
         
         if (auto[1]==correo):
             if  bcrypt.checkpw(clave.encode('utf8'), auto[0].encode('utf8')):
@@ -168,10 +134,9 @@ class LoginControllers(MethodView):
                     'rol':auto[4]}, 
                     KEY_TOKEN_AUTH , algorithm='HS256')
 
-
                 return jsonify({"Status": "login exitoso","into": encoded_jwt,'Nuat':auto[2],'n3yB6PZnGE8n7F':auto[4],'doc':auto[5]}), 200
             else:
-                return jsonify({"Status": "Clave incorrecta"}), 400
+                return jsonify({"Status": "Clave incorrecta"}), 403
 
 ## para el modulo de tienda cargar los productos de la base de datos
 #http://127.0.0.1:5000/productos/tipo=?R o P o E
@@ -180,14 +145,23 @@ class ProductosControllers(MethodView):
         print ("consulta todos los productos de la tienda")
         Tproducto= request.args.get("tipo") # asi es que envia por cabecera la categoría seleccionada - headers idproducto - R001
         #consulta base de datos
-        conexion=crear_conexionMongo()
-        cursor = conexion.cursor(pymysql.cursors.DictCursor)
-        #Se formatea la consulta y se envia parametro de consulta en un arreglo
-        cursor.execute(
-            f"select * from productos where idproducto like '{Tproducto}%'");
-        productos=cursor.fetchall()
-        conexion.commit()
-        conexion.close()
+        MONGO_HOST="jhtserverconnection.ddns.net"
+        MONGO_PUERTO="39011"
+        MONGO_TIEMPO_FUERA=1000
+        MONGO_URI="mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/"
+        cliente=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
+
+        mydb = cliente[ "dbproductos"]
+        mycol = mydb[ "productos"]
+
+        myquery = { "idproducto": { "$regex": Tproducto } }
+        productos = mycol.find(myquery)
+
+        for x in productos:
+          print("+++++++",x)
+
+        #producos = [data for data in mycol.find()]
+        #conexion.close()
         print("Lista de productos",productos)
         return jsonify({'data':productos}), 200
 
@@ -196,18 +170,18 @@ class ProductosControllers(MethodView):
 #http://127.0.0.1:5000/productoId/id_producto=?R120 o P349 o E998
 class ProductoIdControllers(MethodView):
     def post(self):
-        id_producto =request.args.get("idproducto") ## se espera llegada de id del producto
-        print("***** Id a consultar", id_producto)
+        content = request.get_json()
+        id_producto =content.get("idproducto") ## se espera llegada de id del producto
         conexion=crear_conexionMongo()
         cursor = conexion.cursor()
         cursor.execute(
-            "SELECT idproducto,nombre,cantidad,precio,imagen FROM productos WHERE idproducto=%s", (id_producto,))
+            "SELECT idproducto,nombre,cantidad,precio,imagen,descripcion FROM productos WHERE idproducto=%s", (id_producto,))
         dato=cursor.fetchone()
-        print("dato del producto",dato)
-        conexion.commit()
+        conexion.commit() 
         conexion.close()
         if dato==None:
-            return jsonify({"Status": "articulo no esta creado 33"}), 201
+            return jsonify({"Status": "articulo no esta creado"}), 201
+        print("dato del producto",dato)
         return jsonify({'status':'envio ok','data':dato}), 200
 
 ## para modulo admin, creacion de productos
@@ -232,8 +206,8 @@ class CrearControllers(MethodView):
                     conexion.close()
                     print("--Artuculo guardado en la BD--")
                 else:
-                    return jsonify({"Status": "No autorizado por token"}), 403
-                return jsonify({"Status": "Autorizado por token", "emailextraido": data.get("email"),}), 200
+                    return jsonify({"Status": "No autorizado por token"}), 498
+                return jsonify({"Status": "Autorizado por token", "emailextraido": data.get("email"),}), 202
             except:
                 return jsonify({"Status": "TOKEN NO VALIDO"}), 403
         return jsonify({"Status": "No ha enviado un token"}), 403
@@ -279,9 +253,110 @@ class EliminarUserControllers(MethodView):
                     conexion.close()
                     print("--Artuculo eliminado de la BD--")
                 else:
-                    return jsonify({"Status": "No autorizado por token"}), 403
+                    return jsonify({"Status": "No autorizado por token"}), 498
                 return jsonify({"Status": "Autorizado por token", "emailextraido": data.get("email"),}), 200
             except:
-                return jsonify({"Status": "TOKEN NO VALIDO"}), 403
-        return jsonify({"Status": "No ha enviado un token"}), 403
+                return jsonify({"Status": "TOKEN NO VALIDO"}), 498
+        return jsonify({"Status": "No ha enviado un token"}), 203
+
+class CambioClaveControllers(MethodView):
+    def post(self):
+        content = request.get_json()
+        email =content.get("email") 
+        newPassword =content.get("password")
+        salt = bcrypt.gensalt()
+        hash_password = bcrypt.hashpw(bytes(str(newPassword), encoding= 'utf-8'), salt)
+        errors = create_login_schema.validate(content)
+        if errors:
+            return errors, 400
+        conexion=crear_conexion()
+        cursor = conexion.cursor()
+        sql = "UPDATE usuarios SET clave = %s WHERE correo = %s"
+        val = (hash_password,email)
+        cursor.execute(sql,val)
+        conexion.commit()
+        conexion.close()
+        return jsonify({'status':'clave actualizada satisfactoriamente'}), 200
+
+########## aporte faber
+
+class OrdenServicioControllers(MethodView):
+    def post(self):
+        content = request.get_json()
+        #Campos del formulario
+        nombre = content.get("nombre")
+        telefono = content.get("telefono")
+        cedula = content.get("cedula")
+        codservicio = content.get("codservicio")
+        codtecnico = content.get("codtecnico")
+        marcadispositivo = content.get("marcadispositivo")
+        tipodispositivo = content.get("tipodispositivo")
+        tiposervicio = content.get("tiposervicio")
+        accesorios = content.get("accesorios")
+        diaginicial = content.get("diaginicial")
+        #consulta base de datos
+        conexion=crear_conexion()
+        cursor = conexion.cursor()
+        #Se formatea la consulta y se envia parametro de consulta en un arreglo
+        cursor.execute(
+            #f"select * from productos where idproducto like '{idproduc}%'");
+            "INSERT INTO ordenservicio (nombre,telefono,cedula,codservicio,codtecnico,marcadispositivo,tipodispositivo,tiposervicio,accesorios,diaginicial) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", (nombre,telefono,cedula,codservicio,codtecnico,marcadispositivo,tipodispositivo,tiposervicio,accesorios,diaginicial,)
+            )
+        conexion.commit()
+        auto=cursor.fetchall()
+        #print("Mostra orden de servicio",auto)
+        conexion.close()
+        return jsonify({"Status": "Orden de servicio almacenada correctamente"}), 200
+
+
+
+## para el modulo de tienda - asignación de técnico ***************************************************
+#http://127.0.0.1:5000/asignaciontecnico
+
+class AsignacionTecnicoControllers(MethodView):
+    def post(self):
+        content = request.get_json()
+        #Campos del formulario
+        tipodispositivo = content.get("tipodispositivo")
+        codtecnico = request.args.get("id_tec")
+        nombretecnico = content.get("nombretecnico")
+        codservicio = request.args.get("codservicio")
+        escalarservicio = content.get("escalarservicio")
+        tipoespeciescalar = content.get("tipoespeciescalar")
+        diaginicial = content.get("diaginicial")
+        #consulta base de datos database_user
+        conexion=crear_conexion()
+        cursor = conexion.cursor()
+        #Se formatea la consulta y se envia parametro de consulta en un arreglo
+        cursor.execute(
+            f" SELECT * FROM usuarios WHERE id_tec like '{codtecnico}%'"
+            )
+        listatecnicos=cursor.fetchall()
+        print("Lista de técnicos",listatecnicos)
+        conexion.close()
+        return jsonify({"Status":"Lista de técnicos",'data':listatecnicos}), 200
+        conexion=crear_conexion_productos()
+        cursor = conexion.cursor()
+        #Se formatea la consulta y se envia parametro de consulta en un arreglo
+        cursor.execute(
+            f" SELECT * FROM asignaciontecnico WHERE codservicio =%s", (codservicio,)
+            )
+        mostradiagnostico=cursor.fetchone()
+        print("Diagnóstico",mostradiagnostico)
+        conexion.close()
+        return jsonify({"Status":"Diagnóstico",'data':mostradiagnostico}), 200
+
+
+class TokenContrasenaControllers(MethodView):
+    def get(self):
+        email= request.args.get("email")
+        print("--------",email)
+        chars = list('ABCDEFGHIJKLMNOPQRSTUVWYZabcdefghijklmnopqrstuvwyz01234567890')
+        random.shuffle(chars)
+        chars = ''.join(chars)
+        sha1 = hashlib.sha1(chars.encode('utf8'))
+        codigo = sha1.hexdigest()[:8]
+        print("CodigoR",codigo)
+        print('Longitud del Token de recuperación',len(codigo))
+        return jsonify({'Status':'Token generado','CodigoR':codigo}), 200
 

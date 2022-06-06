@@ -15,7 +15,3 @@ class CreateLoginSchema(Schema):
 
     password   = fields.Str(required=True, validate=validate.Length(min=8, max=100))
     email      = fields.Str(required=True, validate=validate.Email())
-
-
-
-
