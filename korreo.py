@@ -3,14 +3,14 @@ from email.mime.text import MIMEText
 from random import random
 import smtplib
 
-def send_correo(usuario,correo,codigo):
+def send_correo(usuario,correo,cod):
 
     # ADMIN de correos
     gmail_admin = 'jeicob28@gmail.com'
     gmail_password = 'xuvmpuaeuqkzfden'
     sent_from = gmail_admin
     #code = random()
-    code = codigo
+    code = cod
     # to = ['sierreitor17@gmail.com', 'jeicob28@yahoo.com']
     to = correo
     subject = 'OMG Super Important Message'
