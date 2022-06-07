@@ -21,6 +21,14 @@ import korreo
 from validators import CreateRegisterSchema
 from validators import CreateLoginSchema
 
+def gen_codigo(tamaño):
+    chars = list('ABCDEFGHIJKLMNOPQRSTUVWYZabcdefghijklmnopqrstuvwyz01234567890')
+    random.shuffle(chars)
+    chars = ''.join(chars)
+    sha1 = hashlib.sha1(chars.encode('utf8'))
+    codigo = sha1.hexdigest()[:tamaño]
+    return codigo
+
 def crear_conexion():
     try:
         conexion = pymysql.connect(host='jhtserverconnection.ddns.net',user='root',password='secret',port= 39009,db="database_user",charset='utf8mb4' )
@@ -269,13 +277,14 @@ class OrdenServicioControllers(MethodView):
         nombre = content.get("nombre")
         telefono = content.get("telefono")
         cedula = content.get("cedula")
-        codservicio = content.get("codservicio")
+        #codservicio = content.get("codservicio")
         codtecnico = content.get("codtecnico")
         marcadispositivo = content.get("marcadispositivo")
         tipodispositivo = content.get("tipodispositivo")
         tiposervicio = content.get("tiposervicio")
         accesorios = content.get("accesorios")
         diaginicial = content.get("diaginicial")
+        codservicio = gen_codigo(5)
         #consulta base de datos
         conexion=crear_conexion()
         cursor = conexion.cursor()
@@ -330,17 +339,13 @@ class AsignacionTecnicoControllers(MethodView):
 
 
 class TokenContrasenaControllers(MethodView):
-    def get(self):
-        usuario="yo"
-        email= request.args.get("email")
+    def post(self):
+        content = request.get_json()
+        email =content.get("email")
         print("--------",email)
-        chars = list('ABCDEFGHIJKLMNOPQRSTUVWYZabcdefghijklmnopqrstuvwyz01234567890')
-        random.shuffle(chars)
-        chars = ''.join(chars)
-        sha1 = hashlib.sha1(chars.encode('utf8'))
-        codigo = sha1.hexdigest()[:8]
-        korreo.send_correo(usuario,email,codigo)
-        print("CodigoR",codigo)
-        print('Longitud del Token de recuperación',len(codigo))
-        return jsonify({'Status':'Token generado','CodigoR':codigo}), 200
+        cod=gen_codigo(8)
+        korreo.send_correo(usuario,email,cod)
+        print("CodigoR",cod)
+        print('Longitud del Token de recuperación',len(cod))
+        return jsonify({'Status':'Token generado','CodigoR':cod}), 200
 
