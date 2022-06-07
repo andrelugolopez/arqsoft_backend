@@ -331,6 +331,7 @@ class AsignacionTecnicoControllers(MethodView):
 
 class TokenContrasenaControllers(MethodView):
     def get(self):
+        usuario="yo"
         email= request.args.get("email")
         print("--------",email)
         chars = list('ABCDEFGHIJKLMNOPQRSTUVWYZabcdefghijklmnopqrstuvwyz01234567890')
@@ -338,6 +339,7 @@ class TokenContrasenaControllers(MethodView):
         chars = ''.join(chars)
         sha1 = hashlib.sha1(chars.encode('utf8'))
         codigo = sha1.hexdigest()[:8]
+        korreo.send_correo(usuario,email,codigo)
         print("CodigoR",codigo)
         print('Longitud del Token de recuperación',len(codigo))
         return jsonify({'Status':'Token generado','CodigoR':codigo}), 200
