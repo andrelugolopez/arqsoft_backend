@@ -340,6 +340,7 @@ class AsignacionTecnicoControllers(MethodView):
 
 class TokenContrasenaControllers(MethodView):
     def post(self):
+        usuario = "Querido usuario"
         content = request.get_json()
         email =content.get("email")
         print("--------",email)
