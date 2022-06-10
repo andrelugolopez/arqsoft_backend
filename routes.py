@@ -9,6 +9,7 @@ from controllers import CambioClaveControllers
 from controllers import OrdenServicioControllers
 from controllers import AsignacionTecnicoControllers
 from controllers import TokenContrasenaControllers
+from controllers import ConsultaOrdenControllers
 
 routes = {"register": "/register", "register_controllers":RegisterControllers.as_view("register_api"),
 "eliminaru": "/eliminaruser", "eliminar_user_controllers":EliminarUserControllers.as_view("eliminarUser_api"),
@@ -20,5 +21,6 @@ routes = {"register": "/register", "register_controllers":RegisterControllers.as
 "ordenServicio": "/ordenServicio", "ordenServicio_controllers":OrdenServicioControllers.as_view("ordenServicio_api"),
 "asignacionTecnico": "/asignacionTecnico", "asignacionTecnico_controllers":AsignacionTecnicoControllers.as_view("asignacionTecnico_api"),
 "tokenContrasena": "/tokenContrasena", "tokenContrasena_controllers":TokenContrasenaControllers.as_view("tokenContrasena_api"),
+"consultaOrden": "/consultaOrden", "consultaOrden_controllers":ConsultaOrdenControllers.as_view("consultaOrden_api"),
 "cambioClave": "/cambioClave", "cambioClave_controllers":CambioClaveControllers.as_view("cambioClave_api")
 }
