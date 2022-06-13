@@ -304,7 +304,7 @@ class ConsultaOrdenControllers(MethodView):
         rol="hbh2jFVsQM7RUy"
         content = request.get_json()
         correo = content.get("email")
-        nombres = content.get("nombres")
+        nombres = content.get("nombre")
         telefono= content.get("telefono")
         documento= content.get("cedula")
         password = content.get("cedula")
@@ -313,7 +313,7 @@ class ConsultaOrdenControllers(MethodView):
         conexion=crear_conexion()
         cursor = conexion.cursor()
         print(conexion)
-        sql = "SELECT clave,correo,nombres,apellidos,rol,documento FROM usuarios WHERE correo=%s OR telefono=%s OR nombres=%s OR documento=%s"
+        sql = "SELECT correo,nombres,apellidos,documento FROM usuarios WHERE correo=%s OR telefono=%s OR nombres=%s OR documento=%s"
         print("SENTENCIA:\n", sql)
         cursor.execute(sql, (correo,telefono, nombres, documento)) 
         auto=cursor.fetchone()
@@ -326,7 +326,7 @@ class ConsultaOrdenControllers(MethodView):
         else :    
             conexion.commit()
             conexion.close()
-            return jsonify({"Status": "El usuario si esta registrado"}), 200 
+            return jsonify({"Status": "El usuario si esta registrado", "data":auto}), 200 
 
 
 
