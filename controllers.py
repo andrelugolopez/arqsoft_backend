@@ -308,27 +308,43 @@ class ConsultaOrdenControllers(MethodView):
         telefono= content.get("telefono")
         documento= content.get("cedula")
         password = content.get("cedula")
+        print ("llega de front",content)
         salt = bcrypt.gensalt()
         hash_password = bcrypt.hashpw(bytes(str(password), encoding= 'utf-8'), salt)
         conexion=crear_conexion()
         cursor = conexion.cursor()
         print(conexion)
-        sql = "SELECT correo,nombres,apellidos,documento FROM usuarios WHERE correo=%s OR telefono=%s OR nombres=%s OR documento=%s"
-        print("SENTENCIA:\n", sql)
-        cursor.execute(sql, (correo,telefono, nombres, documento)) 
-        auto=cursor.fetchone()
-        if auto==None:
-            cursor.execute(
-                 "INSERT INTO usuarios (correo,nombres,clave,documento,rol) VALUES(%s,%s,%s,%s,%s)", (correo.lower(),nombres.capitalize(),hash_password,documento,rol,))
+
+        if(correo!=""):
+            sql = "SELECT correo,nombres,apellidos,documento FROM usuarios WHERE correo=%s"
+            adr= correo
+            cursor.execute(sql,adr) 
+            auto=cursor.fetchone()
+        elif(documento!=""):
+            sql = "SELECT correo,nombres,apellidos,documento FROM usuarios WHERE documento=%s"
+            adr= documento
+            cursor.execute(sql,adr) 
+            auto=cursor.fetchone()
+        elif(telefono!=""):
+            sql = "SELECT correo,nombres,apellidos,documento FROM usuarios WHERE telefono=%s"
+            adr= telefono
+            cursor.execute(sql,adr) 
+            auto=cursor.fetchone()
+        else:
+            cursor.execute("INSERT INTO usuarios (correo,nombres,clave,documento,rol) VALUES(%s,%s,%s,%s,%s)", (correo.lower(),nombres.capitalize(),hash_password,documento,rol,))
             conexion.commit()
             conexion.close()
-            return jsonify({"Status": "Bienvenido registro exitoso"}), 201
+            print("usuario registrado")
+        print ("sale del back",auto)
+        if auto==None:
+            # cursor.execute("INSERT INTO usuarios (correo,nombres,clave,documento,rol) VALUES(%s,%s,%s,%s,%s)", (correo.lower(),nombres.capitalize(),hash_password,documento,rol,))
+            conexion.commit()
+            conexion.close()
+            return jsonify({"Status": "El usuario no se encuentra registrado"}), 201
         else :    
             conexion.commit()
             conexion.close()
             return jsonify({"Status": "El usuario si esta registrado", "data":auto}), 200 
-
-
 
         return jsonify({"Status": "Consulta Orden "}), 200
 
