@@ -308,8 +308,9 @@ class ConsultaTecnicosControllers(MethodView):
             f" SELECT nombres FROM usuarios WHERE rol like '{'H7qm7gQr6DBGfM'}%'")
         listatecnicos=cursor.fetchall()
         print("Lista de técnicos",listatecnicos)
+        tecnicos = [tecnico[0] for tecnico in listatecnicos];
         conexion.close()
-        return jsonify({"Status":"Lista de técnicos",'data':listatecnicos}), 200
+        return jsonify({"Status":"Lista de técnicos",'data':tecnicos}), 200
         conexion.close()
 
 class ConsultaOrdenControllers(MethodView):
