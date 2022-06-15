@@ -299,6 +299,19 @@ class OrdenServicioControllers(MethodView):
         conexion.close()
         return jsonify({"Status": "Orden de servicio almacenada correctamente"}), 200
 
+class ConsultaTecnicosControllers(MethodView):
+    def get(self):
+        conexion=crear_conexion()
+        cursor = conexion.cursor()
+        #Se formatea la consulta y se envia parametro de consulta en un arreglo
+        cursor.execute(
+            f" SELECT nombres FROM usuarios WHERE rol like '{'H7qm7gQr6DBGfM'}%'")
+        listatecnicos=cursor.fetchall()
+        print("Lista de técnicos",listatecnicos)
+        conexion.close()
+        return jsonify({"Status":"Lista de técnicos",'data':listatecnicos}), 200
+        conexion.close()
+
 class ConsultaOrdenControllers(MethodView):
     def post(self):
         rol="hbh2jFVsQM7RUy"
@@ -312,9 +325,9 @@ class ConsultaOrdenControllers(MethodView):
         print ("llega de front",content)
         salt = bcrypt.gensalt()
         hash_password = bcrypt.hashpw(bytes(str(password), encoding= 'utf-8'), salt)
-        # conexion=crear_conexion()
-        # cursor = conexion.cursor()
-        # print(conexion)
+        conexion=crear_conexion()
+        cursor = conexion.cursor()
+        print(conexion)
         if(correo!=""):
             sql = "SELECT correo,nombres,apellidos,documento FROM usuarios WHERE correo=%s"
             adr= correo
