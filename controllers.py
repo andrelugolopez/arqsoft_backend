@@ -278,7 +278,7 @@ class OrdenServicioControllers(MethodView):
         telefono = content.get("telefono")
         cedula = content.get("cedula")
         #codservicio = content.get("codservicio")
-        codtecnico = content.get("codtecnico")
+        nombtecnico = content.get("nombtecnico")
         marcadispositivo = content.get("marcadispositivo")
         tipodispositivo = content.get("tipodispositivo")
         tiposervicio = content.get("tiposervicio")
@@ -348,7 +348,7 @@ class ConsultaOrdenControllers(MethodView):
                 sql = "UPDATE usuarios SET telefono = %s WHERE documento = %s"
                 val = (telefono,documento)
                 cursor.execute(sql,val)
-                return jsonify({"Status": "El usuario no se encuentra registrado"}), 201
+                return jsonify({"Status": "se ctualizo telefono de usuario"}), 201
         else:
             cursor.execute("INSERT INTO usuarios (correo,nombres,apellidos,clave,documento,rol) VALUES(%s,%s,%s,%s,%s,%s)", (correo.lower(),nombres.capitalize(),apellidos.capitalize(),hash_password,documento,rol,))
             conexion.commit()
