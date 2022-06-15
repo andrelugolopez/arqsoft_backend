@@ -327,23 +327,28 @@ class ConsultaOrdenControllers(MethodView):
         salt = bcrypt.gensalt()
         hash_password = bcrypt.hashpw(bytes(str(password), encoding= 'utf-8'), salt)
         conexion=crear_conexion()
-        cursor = conexion.cursor()
+        cursor = conexion.cursor(pymysql.cursors.DictCursor)
         print(conexion)
         if(correo!=""):
-            sql = "SELECT correo,nombres,apellidos,documento FROM usuarios WHERE correo=%s"
+            sql = "SELECT correo,nombres,apellidos,documento,telefono FROM usuarios WHERE correo=%s"
             adr= correo
             cursor.execute(sql,adr) 
             datos=cursor.fetchone()
         elif(documento!=""):
-            sql = "SELECT correo,nombres,apellidos,documento FROM usuarios WHERE documento=%s"
+            sql = "SELECT correo,nombres,apellidos,documento,telefono FROM usuarios WHERE documento=%s"
             adr= documento
             cursor.execute(sql,adr) 
             datos=cursor.fetchone()
         elif(telefono!=""):
-            sql = "SELECT correo,nombres,apellidos,documento FROM usuarios WHERE telefono=%s"
+            sql = "SELECT correo,nombres,apellidos,documento,telefono FROM usuarios WHERE telefono=%s"
             adr= telefono
             cursor.execute(sql,adr) 
             datos=cursor.fetchone()
+            if datos==None:
+                sql = "UPDATE usuarios SET telefono = %s WHERE documento = %s"
+                val = (telefono,documento)
+                cursor.execute(sql,val)
+                return jsonify({"Status": "El usuario no se encuentra registrado"}), 201
         else:
             cursor.execute("INSERT INTO usuarios (correo,nombres,apellidos,clave,documento,rol) VALUES(%s,%s,%s,%s,%s,%s)", (correo.lower(),nombres.capitalize(),apellidos.capitalize(),hash_password,documento,rol,))
             conexion.commit()
