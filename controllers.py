@@ -273,41 +273,73 @@ class CambioClaveControllers(MethodView):
 
 class OrdenServicioControllers(MethodView):
     def post(self):
+        rol="hbh2jFVsQM7RUy"
         content = request.get_json()
-        nombre = content.get("nombre")
+        print("########estos son los datos enviados desde el front####",content)
+        nombreCliente = content.get("nombres")
+        apellidosCliente = content.get("apellidos")
         telefono = content.get("telefono")
         cedula = content.get("cedula")
-        #codservicio = content.get("codservicio")
-        nombtecnico = content.get("nombtecnico")
-        marcadispositivo = content.get("marcadispositivo")
-        tipodispositivo = content.get("tipodispositivo")
+        correo=content.get("email")
+        ordenServicio = gen_codigo(5)
+        nombreTecnico = content.get("nombtecnico")
+        serialEquipo=content.get("serial")
+        marcaEquipo = content.get("marcadispositivo")
+        tipoDispositivo = content.get("tipodispositivo")
+        accesoriosDispositivos = content.get("accesorios")
+        diagnosticoInicial = content.get("diaginicial")
         tiposervicio = content.get("tiposervicio")
-        accesorios = content.get("accesorios")
-        diaginicial = content.get("diaginicial")
-        codservicio = gen_codigo(5)
-        #consulta base de datos
+        fecha = content.get("fecha")
+## consulta a bd sql para saber si el usuario estaregistrado en el sistema, di no se crea y el passwor inicial
+## sera el el documento de identidad 
         conexion=crear_conexion()
-        cursor = conexion.cursor()
-        #Se formatea la consulta y se envia parametro de consulta en un arreglo
-        cursor.execute(
-            #f"select * from productos where idproducto like '{idproduc}%'");
-            "INSERT INTO ordenservicio (nombre,telefono,cedula,codservicio,codtecnico,marcadispositivo,tipodispositivo,tiposervicio,accesorios,diaginicial) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", (nombre,telefono,cedula,codservicio,codtecnico,marcadispositivo,tipodispositivo,tiposervicio,accesorios,diaginicial,)
-            )
-        conexion.commit()
-        auto=cursor.fetchall()
-        #print("Mostra orden de servicio",auto)
-        conexion.close()
+        cursor = conexion.cursor(pymysql.cursors.DictCursor)
+        sql = "SELECT correo,nombres,apellidos FROM usuarios WHERE correo=%s"
+        adr= correo
+        cursor.execute(sql,adr) 
+        datos=cursor.fetchone()
+        if datos==None:
+            salt = bcrypt.gensalt()
+            hash_password = bcrypt.hashpw(bytes(str(cedula), encoding= 'utf-8'), salt)
+            cursor.execute("INSERT INTO usuarios (correo,nombres,apellidos,clave,documento,rol,telefono) VALUES(%s,%s,%s,%s,%s,%s,%s)", (correo.lower(),nombreCliente.capitalize(),apellidosCliente.capitalize(),hash_password,cedula,rol,telefono,))
+            conexion.commit()
+            conexion.close()
+            print("usuario creado en la base de datos SQL")
+            #return jsonify({"Status": "El usuario se a registrado para crear la orden de servicio"}), 201
+        else :
+            print("usuario esta en base de datos")
+            #return jsonify({"Status": "El usuario esta registrado"}), 200
+        nombreCompleto=nombreCliente + apellidosCliente
+        diagnostico= str(fecha) + tiposervicio + nombreTecnico
+        MONGO_HOST="jhtserverconnection.ddns.net"
+        MONGO_PUERTO="39011"
+        MONGO_TIEMPO_FUERA=1000
+        myclient= pymongo.MongoClient("mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/")
+        mydb= myclient["dbproductos"]
+        mycol = mydb["historicos"]
+        mydict = {  "nombreCliente":str(nombreCompleto),
+                    "telefono":str(telefono),
+                    "ordenServicio":str(ordenServicio),                    
+                    "nombreTecnico":str(nombreTecnico),
+                    "serialEquipo":str(serialEquipo),
+                    "marcaEquipo":str(marcaEquipo),
+                    "tipoDispositivo":str(tipoDispositivo),
+                    "accesoriosDispositivos":str(accesoriosDispositivos),
+                    "diagnosticoInicial":str(diagnosticoInicial),
+                    "diagnosticoDetallado":str(diagnostico),
+                    "fecha":"jueves"
+                    }
+        datos = mycol.insert_one(mydict)
+        print("datos guardados en mongo", datos)
         return jsonify({"Status": "Orden de servicio almacenada correctamente"}), 200
 
 class ConsultaTecnicosControllers(MethodView):
     def get(self):
         conexion=crear_conexion()
         cursor = conexion.cursor()
-        #Se formatea la consulta y se envia parametro de consulta en un arreglo
         cursor.execute(
             f" SELECT nombres FROM usuarios WHERE rol like '{'H7qm7gQr6DBGfM'}%'")
         listatecnicos=cursor.fetchall()
-        print("Lista de técnicos",listatecnicos)
         tecnicos = [tecnico[0] for tecnico in listatecnicos];
         conexion.close()
         return jsonify({"Status":"Lista de técnicos",'data':tecnicos}), 200
@@ -315,20 +347,15 @@ class ConsultaTecnicosControllers(MethodView):
 
 class ConsultaOrdenControllers(MethodView):
     def post(self):
-        rol="hbh2jFVsQM7RUy"
         content = request.get_json()
         correo = content.get("email")
-        nombres = content.get("nombre")
+        nombres = content.get("nombres")
         apellidos=content.get("apellidos")
         telefono= content.get("telefono")
         documento= content.get("cedula")
-        password = content.get("cedula")
-        print ("llega de front",content)
-        salt = bcrypt.gensalt()
-        hash_password = bcrypt.hashpw(bytes(str(password), encoding= 'utf-8'), salt)
         conexion=crear_conexion()
         cursor = conexion.cursor(pymysql.cursors.DictCursor)
-        print(conexion)
+
         if(correo!=""):
             sql = "SELECT correo,nombres,apellidos,documento,telefono FROM usuarios WHERE correo=%s"
             adr= correo
@@ -348,19 +375,11 @@ class ConsultaOrdenControllers(MethodView):
                 sql = "UPDATE usuarios SET telefono = %s WHERE documento = %s"
                 val = (telefono,documento)
                 cursor.execute(sql,val)
-                return jsonify({"Status": "se ctualizo telefono de usuario"}), 201
-        else:
-            cursor.execute("INSERT INTO usuarios (correo,nombres,apellidos,clave,documento,rol) VALUES(%s,%s,%s,%s,%s,%s)", (correo.lower(),nombres.capitalize(),apellidos.capitalize(),hash_password,documento,rol,))
-            conexion.commit()
-            conexion.close()
-            print("usuario registrado")
-        print ("sale del back",datos)
+                print("numero telefonico actualizado")
         if datos==None:
             return jsonify({"Status": "El usuario no se encuentra registrado"}), 201
         else :
             return jsonify({"Status": "El usuario si esta registrado", "data":datos}), 200 
-
-        return jsonify({"Status": "Consulta Orden "}), 200
 
 ## para el modulo de tienda - asignación de técnico ***************************************************
 #http://127.0.0.1:5000/asignaciontecnico
@@ -404,9 +423,6 @@ class TokenContrasenaControllers(MethodView):
         usuario="Querido usuario"
         content = request.get_json()
         email =content.get("email")
-        print("--------",email)
         cod=gen_codigo(8)
         korreo.send_correo(usuario,email,cod)
-        print("CodigoR",cod)
-        print('Longitud del Token de recuperación',len(cod))
         return jsonify({'Status':'Token generado','CodigoR':cod}), 200
