@@ -124,7 +124,29 @@ class LoginControllers(MethodView):
                 return jsonify({"Status": "login exitoso","into": encoded_jwt,'Nuat':auto[2],'n3yB6PZnGE8n7F':auto[4],'doc':auto[5]}), 200
             else:
                 return jsonify({"Status": "Clave incorrecta"}), 403
+class ConsultaDiagnosticoControllers(MethodView):
+    def get(self):
+        print ("consulta las ordenes de servicio asignadas al tecnico")
+        nombreTec = request.args.get("nombreTecnico")
+        #consulta base de datos
+        MONGO_HOST="jhtserverconnection.ddns.net"
+        MONGO_PUERTO="39011"
+        MONGO_TIEMPO_FUERA=1000
+        MONGO_URI="mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/"
+        cliente=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
 
+        mydb = cliente[ "dbproductos"]
+        mycol = mydb[ "historicos"]
+
+        myquery = { "nombreTecnico": { "$regex": nombreTec} }
+        ordenes = mycol.find(myquery)
+
+        keys = ["_id"]
+        ordenesOutput = []
+        for orden in ordenes:
+            ordenesOutput.append({x:orden[x] for x in orden if x not in keys})
+        print("Lista de ordenes",ordenes)
+        return jsonify({'data':ordenesOutput}), 200
 ## para el modulo de tienda cargar los productos de la base de datos
 #http://127.0.0.1:5000/productos/tipo=?R o P o E
 class ProductosControllers(MethodView):
@@ -148,7 +170,7 @@ class ProductosControllers(MethodView):
         output = []
         for producto in productos:
             output.append({x:producto[x] for x in producto if x not in keys})
-        print(output)
+        print("imgen a mostrar",producto["rutaimagen"])
         print("Lista de productos",productos)
         return jsonify({'data':output}), 200
 
