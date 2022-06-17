@@ -19,3 +19,4 @@ app.add_url_rule(routes["consultaOrden"], view_func=routes["consultaOrden_contro
 app.add_url_rule(routes["asignacionTecnico"], view_func=routes["asignacionTecnico_controllers"])
 app.add_url_rule(routes["consultaTecnicos"], view_func=routes["consultaTecnicos_controllers"])
 app.add_url_rule(routes["tokenContrasena"], view_func=routes["tokenContrasena_controllers"])
+app.add_url_rule(routes["consultaDiagnostico"],view_func=routes["consultaDiagnostico_controllers"])

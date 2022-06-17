@@ -11,6 +11,7 @@ from controllers import AsignacionTecnicoControllers
 from controllers import TokenContrasenaControllers
 from controllers import ConsultaOrdenControllers
 from controllers import ConsultaTecnicosControllers
+from controllers import ConsultaDiagnosticoControllers
 
 routes = {"register": "/register", "register_controllers":RegisterControllers.as_view("register_api"),
 "eliminaru": "/eliminaruser", "eliminar_user_controllers":EliminarUserControllers.as_view("eliminarUser_api"),
@@ -19,6 +20,7 @@ routes = {"register": "/register", "register_controllers":RegisterControllers.as
 "eliminar": "/eliminarproducto", "eliminar_producto_controllers":EliminarProductoControllers.as_view("eliminarProducto_api"),
 "productos": "/productos", "productos_controllers":ProductosControllers.as_view("productos_api"),
 "productoId": "/productoId", "productoId_controllers":ProductoIdControllers.as_view("productoId_api"),
+"consultaDiagnostico": "/consultaDiagnostico", "consultaDiagnostico_controllers":ConsultaDiagnosticoControllers.as_view("consultaDiagnostico_api"),
 "ordenServicio": "/ordenServicio", "ordenServicio_controllers":OrdenServicioControllers.as_view("ordenServicio_api"),
 "asignacionTecnico": "/asignacionTecnico", "asignacionTecnico_controllers":AsignacionTecnicoControllers.as_view("asignacionTecnico_api"),
 "consultaTecnicos": "/consultaTecnicos", "consultaTecnicos_controllers":ConsultaTecnicosControllers.as_view("consultaTecnicos_api"),
