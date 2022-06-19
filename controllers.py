@@ -36,23 +36,6 @@ def crear_conexion():
     except pymysql.Error as error:
         print('Se ha producido un error al crear la conexión:', error)
         
-
-def crear_conexionMongo():
-    MONGO_HOST="jhtserverconnection.ddns.net"
-    MONGO_PUERTO="39011"
-    MONGO_TIEMPO_FUERA=1000
-    MONGO_URI="mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/"
-    try:
-        cliente=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
-        cliente.server_info()
-        print("Conexion a mongo exitosa")
-        ###cliente.close()
-        ##return conexion
-    except pymongo.errors.ServerSelectionTimeoutError as errorTiempo:
-        print("Tiempo excedido  ",errorTiempo)
-    except pymongo.errors.ConnectionFailure as errorConexion:
-        print("Fallo al conectarse a mongodb ",errorConexion)
-
 create_register_schema = CreateRegisterSchema()
 create_login_schema = CreateLoginSchema()
 
@@ -264,7 +247,7 @@ class EliminarUserControllers(MethodView):
                     cursor.execute("DELETE FROM usuarios WHERE Email=%s",(correo,))
                     conexion.commit()
                     conexion.close()
-                    print("--Artuculo eliminado de la BD--")
+                    print("--Usuario eliminado de la BD--")
                 else:
                     return jsonify({"Status": "No autorizado por token"}), 498
                 return jsonify({"Status": "Autorizado por token", "emailextraido": data.get("email"),}), 200
