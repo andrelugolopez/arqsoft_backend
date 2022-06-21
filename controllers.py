@@ -158,8 +158,32 @@ class ProductosControllers(MethodView):
         return jsonify({'data':output}), 200
 
 ## consulta a la base de datos el producto y se le agrega al usuario
-
 #http://127.0.0.1:5000/productoId/id_producto=?R120 o P349 o E998
+class ConsultaOrdenTecnicosControllers(MethodView):
+    def get(self):
+        print ("consulta todos los tecnicos con ordenes activas")
+        nombreTec= request.args.get("tecnico") # asi es que envia por cabecera la categoría seleccionada - headers idproducto - R001
+        #consulta base de datos
+        MONGO_HOST="jhtserverconnection.ddns.net"
+        MONGO_PUERTO="39011"
+        MONGO_TIEMPO_FUERA=1000
+        MONGO_URI="mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/"
+        cliente=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
+
+        mydb = cliente[ "dbproductos"]
+        mycol = mydb[ "historicos"]
+
+        myquery = { "nombreTecnico": { "$regex": nombreTec} }
+        tecnicos = mycol.find(myquery)
+
+        keys = ["_id"]
+        output = []
+        for tecnico in tecnicos:
+            output.append({x:tecnico[x] for x in tecnico if x not in keys})
+        print("imgen a mostrar",tecnico["rutaimagen"])
+        print("Lista de productos",tecnicoss)
+        return jsonify({'data':output}), 200
+
 class ProductoIdControllers(MethodView):
     def get(self):
         print ("consulta todos los productos de la tienda")
