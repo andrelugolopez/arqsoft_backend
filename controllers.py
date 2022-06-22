@@ -71,7 +71,64 @@ class RegisterControllers(MethodView):
             conexion.commit()
             conexion.close()
             return jsonify({"Status": "El usuario ya esta registrado"}), 200
-            
+
+class RegisterAdminControllers(MethodView):
+    def post(self):
+        content = request.get_json()
+        documento= content.get("cedula")
+        nombres = content.get("nombres")
+        apellidos = content.get("apellidos")
+        email = content.get("email")
+        telefono = content.get("telefono")
+        direccion= content.get("direccion")
+        password = content.get("cedula")
+        rol=content.get("rol")
+        print("--------",email, nombres,apellidos,password,documento)
+        salt = bcrypt.gensalt()
+        hash_password = bcrypt.hashpw(bytes(str(password), encoding= 'utf-8'), salt)
+        if errors:
+            return errors, 400
+        if (request.headers.get('Authorization')):
+            token = request.headers.get('Authorization').split(" ")
+            try:
+                data = jwt.decode(token[1], KEY_TOKEN_AUTH , algorithms=['HS256'])
+                if (data.get('rol')=='J8p4SBfJgRfZCo'):
+                    conexion=crear_conexion()
+                    print(conexion)
+                    cursor = conexion.cursor()
+                    cursor.execute("SELECT clave,correo FROM usuarios WHERE correo=%s", (email, ))
+                    auto=cursor.fetchone()
+                    if auto==None:
+                        cursor.execute(
+                            "INSERT INTO usuarios (documento,nombres,apellidos,correo,telefono,direccion,rol,clave) VALUES(%s,%s,%s,%s,%s,%s,%s,%s)", (documento,nombres.capitalize(),apellidos.capitalize(),email.lower(),telefono,direccion,hash_password,rol,))
+                        conexion.commit()
+                        conexion.close()
+                        return jsonify({"Status": "Bienvenido ha sido registrado"}), 201
+                    else :
+                        conexion.commit()
+                        conexion.close()
+                        return jsonify({"Status": "El usuario ya en la BD"}), 200
+                else:
+                    return jsonify({"Status": "No autorizado por token"}), 498
+                return jsonify({"Status": "Autorizado por token"}), 202
+            except:
+                return jsonify({"Status": "TOKEN NO VALIDO"}), 403
+
+class ConsultaUsuarioControllers(MethodView):
+    def get(self):
+        documentoUsuario = request.args.get("documento")
+        conexion=crear_conexion()
+        cursor = conexion.cursor()       
+        cursor.execute(
+            "SELECT correo,nombres,apellidos,documento,telefono,direccion FROM usuarios WHERE documento=%s", (documentoUsuario,)
+        )
+        auto = cursor.fetchone()
+        conexion.close()
+        if auto==None:
+            return jsonify({"Status": "usuario no registrado"}), 400
+        else:
+            return jsonify({"Status":"datos de usuario","data":auto}), 200
+
 class LoginControllers(MethodView):
     def post(self):
         print ("login y creacion de jwt para navegacion")
@@ -107,6 +164,7 @@ class LoginControllers(MethodView):
                 return jsonify({"Status": "login exitoso","into": encoded_jwt,'Nuat':auto[2],'n3yB6PZnGE8n7F':auto[4],'doc':auto[5]}), 200
             else:
                 return jsonify({"Status": "Clave incorrecta"}), 403
+
 class ConsultaDiagnosticoControllers(MethodView):
     def get(self):
         print ("consulta las ordenes de servicio asignadas al tecnico")
@@ -132,6 +190,7 @@ class ConsultaDiagnosticoControllers(MethodView):
         return jsonify({'data':ordenesOutput}), 200
 ## para el modulo de tienda cargar los productos de la base de datos
 #http://127.0.0.1:5000/productos/tipo=?R o P o E
+
 class ProductosControllers(MethodView):
     def get(self):
         print ("consulta todos los productos de la tienda")
@@ -455,3 +514,33 @@ class TokenContrasenaControllers(MethodView):
         cod=gen_codigo(8)
         korreo.send_correo(usuario,email,cod)
         return jsonify({'Status':'Token generado','CodigoR':cod}), 200
+
+class ActualizarUsuarioControllers(MethodView):
+    def post(self):
+        content = request.get_json()
+        nombres = content.get("nombres")
+        apellidos = content.get("apellidos")
+        email = content.get("email")
+        telefono = content.get("telefono")
+        direccion= content.get("direccion")
+        rol=content.get("rol")
+        if (request.headers.get('Authorization')):
+            token = request.headers.get('Authorization').split(" ")
+            try:
+                data = jwt.decode(token[1], KEY_TOKEN_AUTH , algorithms=['HS256'])
+                if (data.get('rol')=='J8p4SBfJgRfZCo'):
+                    conexion=crear_conexion()
+                    cursor = conexion.cursor()
+                    sql = "UPDATE usuarios SET nombres,apellidos,telefono,direccion,rol = %s,%s,%s,%s,%s WHERE correo = %s"
+                    val = (nombres.capitalize(),apellidos.capitalize(),telefono,direccion,rol,email.lower())
+                    cursor.execute(sql,val)
+                    conexion.commit()
+                    conexion.close()
+                    return jsonify({'status':'Usuario Actualizado Satisfactoriamente'}), 200
+                    print("--Usuario Actualizado--")
+                else:
+                    return jsonify({"Status": "No autorizado por token"}), 498
+                return jsonify({"Status": "Autorizado por token", "emailextraido": data.get("email"),}), 202
+            except:
+                return jsonify({"Status": "TOKEN NO VALIDO"}), 403
+        return jsonify({"Status": "No ha enviado un token"}), 403
