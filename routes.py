@@ -13,7 +13,7 @@ from controllers import ConsultaOrdenControllers
 from controllers import ConsultaTecnicosControllers
 from controllers import ConsultaDiagnosticoControllers
 from controllers import ConsultaOrdenTecnicosControllers
-
+from controllers import ProductosBuscarControllers
 routes = {"register": "/register", "register_controllers":RegisterControllers.as_view("register_api"),
 "eliminaru": "/eliminaruser", "eliminar_user_controllers":EliminarUserControllers.as_view("eliminarUser_api"),
 "login": "/login", "login_controllers":LoginControllers.as_view("login_api"),
@@ -28,5 +28,6 @@ routes = {"register": "/register", "register_controllers":RegisterControllers.as
 "tokenContrasena": "/tokenContrasena", "tokenContrasena_controllers":TokenContrasenaControllers.as_view("tokenContrasena_api"),
 "consultaOrden": "/consultaOrden", "consultaOrden_controllers":ConsultaOrdenControllers.as_view("consultaOrden_api"),
 "consultaOrdenTecnicos": "/consultaOrdenTecnicos", "consultaOrdenTecnicos_controllers":ConsultaOrdenTecnicosControllers.as_view("consultaOrdenTecnicos_api"),
-"cambioClave": "/cambioClave", "cambioClave_controllers":CambioClaveControllers.as_view("cambioClave_api")
+"cambioClave": "/cambioClave", "cambioClave_controllers":CambioClaveControllers.as_view("cambioClave_api"),
+"buscarProductos": "/buscarProductos", "buscarProductos_controllers":ProductosBuscarControllers.as_view("buscarProductos_api")
 }
