@@ -13,7 +13,6 @@ from controllers import ConsultaOrdenControllers
 from controllers import ConsultaTecnicosControllers
 from controllers import ConsultaDiagnosticoControllers
 from controllers import ConsultaOrdenTecnicosControllers
-
 from controllers import ConsultaUsuarioControllers
 from controllers import RegisterAdminControllers
 from controllers import ActualizarUsuarioControllers
