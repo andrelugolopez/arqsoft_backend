@@ -24,3 +24,5 @@ app.add_url_rule(routes["consultaDiagnostico"],view_func=routes["consultaDiagnos
 app.add_url_rule(routes["consultaOrdenTecnicos"],view_func=routes["consultaOrdenTecnicos_controllers"])
 app.add_url_rule(routes["consultaUsuario"],view_func=routes["consultaUsuario_controllers"])
 app.add_url_rule(routes["actualizarUsuario"],view_func=routes["actualizarUsuario_controllers"])
+app.add_url_rule(routes["buscarProductos"],view_func=routes["buscarProductos_controllers"])
+

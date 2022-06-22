@@ -212,7 +212,7 @@ class ProductosControllers(MethodView):
         output = []
         for producto in productos:
             output.append({x:producto[x] for x in producto if x not in keys})
-        print("imgen a mostrar",producto["rutaimagen"])
+        print("imagen a mostrar",producto["rutaimagen"])
         print("Lista de productos",productos)
         return jsonify({'data':output}), 200
 
@@ -240,7 +240,7 @@ class ConsultaOrdenTecnicosControllers(MethodView):
         for tecnico in tecnicos:
             output.append({x:tecnico[x] for x in tecnico if x not in keys})
         print("imgen a mostrar",tecnico["rutaimagen"])
-        print("Lista de productos",tecnicoss)
+        print("Lista de productos",tecnicos)
         return jsonify({'data':output}), 200
 
 class ProductoIdControllers(MethodView):
@@ -515,6 +515,7 @@ class TokenContrasenaControllers(MethodView):
         korreo.send_correo(usuario,email,cod)
         return jsonify({'Status':'Token generado','CodigoR':cod}), 200
 
+
 class ActualizarUsuarioControllers(MethodView):
     def post(self):
         content = request.get_json()
@@ -544,3 +545,26 @@ class ActualizarUsuarioControllers(MethodView):
             except:
                 return jsonify({"Status": "TOKEN NO VALIDO"}), 403
         return jsonify({"Status": "No ha enviado un token"}), 403
+
+
+#http://127.0.0.1:5000/buscarProductos
+class ProductosBuscarControllers(MethodView):
+    def get(self):
+        nombre = request.args.get("buscarproducto")
+        MONGO_HOST="jhtserverconnection.ddns.net"
+        MONGO_PUERTO="39011"
+        MONGO_TIEMPO_FUERA=1000
+        MONGO_URI="mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/"
+        mongo=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
+        mydb = mongo["dbproductos"]
+        mycol = mydb["productos"]
+        myquery = { "nombre": { "$regex": f"^{nombre}" } }  
+        result = mycol.find(myquery)
+        keys = ["_id"]
+        lista_productos = []
+        for producto in result:
+            lista_productos.append({ llave:producto[llave] for llave in producto if llave not in keys })
+        print("dato del producto",lista_productos)
+        return jsonify({'status':'Lista de productos','data':lista_productos}), 200
+    
+
