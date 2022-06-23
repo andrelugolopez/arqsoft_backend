@@ -83,7 +83,6 @@ class RegisterAdminControllers(MethodView):
         direccion= content.get("direccion")
         password = content.get("cedula")
         roll=content.get("rol")
-        print("--------",email, nombres,apellidos,password,documento)
         salt = bcrypt.gensalt()
         hash_password = bcrypt.hashpw(bytes(str(password), encoding= 'utf-8'), salt)
         if (request.headers.get('Authorization')):
@@ -100,7 +99,8 @@ class RegisterAdminControllers(MethodView):
                     if auto==None:
                         print ("entra a guardar los datos en la bd",content)
                         cursor.execute(
-                            "INSERT INTO usuarios (documento,nombres,apellidos,correo,telefono,direccion,rol,clave) VALUES(%s,%s,%s,%s,%s,%s,%s,%s)", (documento,nombres.capitalize(),apellidos.capitalize(),email.lower(),telefono,direccion,hash_password,roll,))
+                            "INSERT INTO usuarios (documento,nombres,apellidos,correo,telefono,direccion,rol,clave) VALUES(%s,%s,%s,%s,%s,%s,%s,%s)", (documento,nombres.capitalize(),apellidos.capitalize(),email.lower(),telefono,direccion,roll,hash_password,)
+                            )
                         conexion.commit()
                         conexion.close()
                         return jsonify({"Status": "Bienvenido ha sido registrado"}), 201
