@@ -300,7 +300,7 @@ class EliminarProductoControllers(MethodView):
             token = request.headers.get('Authorization').split(" ")
             try:
                 data = jwt.decode(token[1], KEY_TOKEN_AUTH , algorithms=['HS256'])
-                if (data.get('rol')=='admin'):
+                if (data.get('rol')=='J8p4SBfJgRfZCo'):
                     conexion=crear_conexionMongo()
                     cursor = conexion.cursor()
                     cursor.execute("DELETE FROM productos WHERE idproducto=%s",(idproducto,))
@@ -324,7 +324,7 @@ class EliminarUserControllers(MethodView):
             token = request.headers.get('Authorization').split(" ")
             try:
                 data = jwt.decode(token[1], KEY_TOKEN_AUTH , algorithms=['HS256'])
-                if (data.get('rol')=='admin'):
+                if (data.get('rol')=='J8p4SBfJgRfZCo'):
                     conexion=crear_conexion()
                     cursor = conexion.cursor()
                     cursor.execute("DELETE FROM usuarios WHERE Email=%s",(correo,))
