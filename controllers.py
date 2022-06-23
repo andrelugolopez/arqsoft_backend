@@ -82,12 +82,10 @@ class RegisterAdminControllers(MethodView):
         telefono = content.get("telefono")
         direccion= content.get("direccion")
         password = content.get("cedula")
-        rol=content.get("rol")
+        roll=content.get("rol")
         print("--------",email, nombres,apellidos,password,documento)
         salt = bcrypt.gensalt()
         hash_password = bcrypt.hashpw(bytes(str(password), encoding= 'utf-8'), salt)
-        if errors:
-            return errors, 400
         if (request.headers.get('Authorization')):
             token = request.headers.get('Authorization').split(" ")
             try:
@@ -98,9 +96,11 @@ class RegisterAdminControllers(MethodView):
                     cursor = conexion.cursor()
                     cursor.execute("SELECT clave,correo FROM usuarios WHERE correo=%s", (email, ))
                     auto=cursor.fetchone()
+                    print(auto)
                     if auto==None:
+                        print ("entra a guardar los datos en la bd",content)
                         cursor.execute(
-                            "INSERT INTO usuarios (documento,nombres,apellidos,correo,telefono,direccion,rol,clave) VALUES(%s,%s,%s,%s,%s,%s,%s,%s)", (documento,nombres.capitalize(),apellidos.capitalize(),email.lower(),telefono,direccion,hash_password,rol,))
+                            "INSERT INTO usuarios (documento,nombres,apellidos,correo,telefono,direccion,rol,clave) VALUES(%s,%s,%s,%s,%s,%s,%s,%s)", (documento,nombres.capitalize(),apellidos.capitalize(),email.lower(),telefono,direccion,hash_password,roll,))
                         conexion.commit()
                         conexion.close()
                         return jsonify({"Status": "Bienvenido ha sido registrado"}), 201
@@ -108,6 +108,8 @@ class RegisterAdminControllers(MethodView):
                         conexion.commit()
                         conexion.close()
                         return jsonify({"Status": "El usuario ya en la BD"}), 200
+                    # conexion.commit()
+                    # conexion.close()
                 else:
                     return jsonify({"Status": "No autorizado por token"}), 498
                 return jsonify({"Status": "Autorizado por token"}), 202
@@ -324,10 +326,10 @@ class EliminarUserControllers(MethodView):
             token = request.headers.get('Authorization').split(" ")
             try:
                 data = jwt.decode(token[1], KEY_TOKEN_AUTH , algorithms=['HS256'])
-                if (data.get('rol')=='J8p4SBfJgRfZCo'):
+                if (data.get('rol')==('J8p4SBfJgRfZCo')):
                     conexion=crear_conexion()
                     cursor = conexion.cursor()
-                    cursor.execute("DELETE FROM usuarios WHERE Email=%s",(correo,))
+                    cursor.execute("DELETE FROM usuarios WHERE correo=%s",(correo,))
                     conexion.commit()
                     conexion.close()
                     print("--Usuario eliminado de la BD--")
