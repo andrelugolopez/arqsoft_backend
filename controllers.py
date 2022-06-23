@@ -181,7 +181,7 @@ class ConsultaDiagnosticoControllers(MethodView):
         mydb = cliente[ "dbproductos"]
         mycol = mydb[ "historicos"]
 
-        myquery = { "nombreTecnico": { "$regex": nombreTec} }
+        myquery = { "nombreTecnico": nombreTec,"estado":"abierto" }
         ordenes = mycol.find(myquery)
 
         keys = ["_id"]
@@ -207,7 +207,7 @@ class ProductosControllers(MethodView):
         mydb = cliente[ "dbproductos"]
         mycol = mydb[ "productos"]
 
-        myquery = { "idproducto": { "$regex": Tproducto } }
+        myquery = { "idproducto": Tproducto }
         productos = mycol.find(myquery)
 
         keys = ["_id"]
@@ -373,13 +373,13 @@ class OrdenServicioControllers(MethodView):
         correo=content.get("email")
         ordenServicio = gen_codigo(5)
         nombreTecnico = content.get("nombtecnico")
-        serialEquipo=content.get("serial")
+        serialEquipo=content.get("serial_equipo")
         marcaEquipo = content.get("marcadispositivo")
         tipoDispositivo = content.get("tipodispositivo")
         accesoriosDispositivos = content.get("accesorios")
         diagnosticoInicial = content.get("diaginicial")
         tiposervicio = content.get("tiposervicio")
-        fecha = content.get("fecha")
+        fecha = content.get("fecha")+content.get("hora")
 ## consulta a bd sql para saber si el usuario estaregistrado en el sistema, di no se crea y el passwor inicial
 ## sera el el documento de identidad 
         conexion=crear_conexion()
@@ -417,7 +417,8 @@ class OrdenServicioControllers(MethodView):
                     "accesoriosDispositivos":str(accesoriosDispositivos),
                     "diagnosticoInicial":str(diagnosticoInicial),
                     "diagnosticoDetallado":str(diagnostico),
-                    "fecha":"jueves"
+                    "fecha":"jueves",
+                    "estado":"abierta"
                     }
         datos = mycol.insert_one(mydict)
         print("datos guardados en mongo", datos)

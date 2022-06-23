@@ -38,6 +38,5 @@ routes = {"register": "/register", "register_controllers":RegisterControllers.as
 "consultaOrdenTecnicos": "/consultaOrdenTecnicos", "consultaOrdenTecnicos_controllers":ConsultaOrdenTecnicosControllers.as_view("consultaOrdenTecnicos_api"),
 "actualizarUsuario": "/actualizarUsuario", "actualizarUsuario_controllers":ActualizarUsuarioControllers.as_view("actualizarUsuarios_api"),
 "cambioClave": "/cambioClave", "cambioClave_controllers":CambioClaveControllers.as_view("cambioClave_api"),
-"cambioClave": "/cambioClave", "cambioClave_controllers":CambioClaveControllers.as_view("cambioClave_api"),
 "buscarProductos": "/buscarProductos", "buscarProductos_controllers":ProductosBuscarControllers.as_view("buscarProductos_api")
 }
