@@ -524,6 +524,7 @@ class ActualizarUsuarioControllers(MethodView):
         telefono = content.get("telefono")
         direccion= content.get("direccion")
         roll=content.get("rol")
+
         print("llegada de datos del front",content)
         if (request.headers.get('Authorization')):
             token = request.headers.get('Authorization').split(" ")
@@ -531,13 +532,14 @@ class ActualizarUsuarioControllers(MethodView):
                 data = jwt.decode(token[1], KEY_TOKEN_AUTH , algorithms=['HS256'])
                 if (data.get('rol')==('J8p4SBfJgRfZCo')):
                     print("si entra a la comparacion de rol")
-                    # conexion=crear_conexion()
-                    # cursor = conexion.cursor()
-                    # sql = "UPDATE usuarios SET nombres,apellidos,telefono,direccion,rol = %s,%s,%s,%s,%s WHERE correo = %s"
-                    # val = (nombres.capitalize(),apellidos.capitalize(),telefono,direccion,roll,email.lower())
-                    # cursor.execute(sql,val)
-                    # conexion.commit()
-                    # conexion.close()
+                    conexion=crear_conexion()
+                    print(conexion)
+                    cursor = conexion.cursor()
+                    sql = "UPDATE usuarios SET nombres=%s,apellidos=%s,telefono=%s,direccion=%s,rol=%s WHERE correo = %s"
+                    val = (nombres.capitalize(),apellidos.capitalize(),telefono,direccion,roll,email.lower())
+                    cursor.execute(sql,val)
+                    conexion.commit()
+                    conexion.close()
                     return jsonify({'status':'Usuario Actualizado Satisfactoriamente'}), 200
                     print("--Usuario Actualizado--")
                 else:
