@@ -333,7 +333,7 @@ class EliminarUserControllers(MethodView):
                     print("--Usuario eliminado de la BD--")
                 else:
                     return jsonify({"Status": "No autorizado por token"}), 498
-                return jsonify({"Status": "Autorizado por token", "emailextraido": data.get("email"),}), 200
+                return jsonify({"Status": "Autorizado por token"}), 200
             except:
                 return jsonify({"Status": "TOKEN NO VALIDO"}), 498
         return jsonify({"Status": "No ha enviado un token"}), 203
