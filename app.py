@@ -26,4 +26,5 @@ app.add_url_rule(routes["actualizarUsuario"],view_func=routes["actualizarUsuario
 app.add_url_rule(routes["buscarProductos"],view_func=routes["buscarProductos_controllers"])
 app.add_url_rule(routes["actualizarHistoria"],view_func=routes["actualizarHistoria_controllers"])
 app.add_url_rule(routes["actualizarSalida"],view_func=routes["actualizarSalida_controllers"])
+app.add_url_rule(routes["consultaEquipo"],view_func=routes["consultaEquipo_controllers"])
 app.add_url_rule(routes["consultaDispositivoOrden"],view_func=routes["consultaDispositivoOrden_controllers"])

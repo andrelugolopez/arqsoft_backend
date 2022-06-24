@@ -18,6 +18,7 @@ from controllers import ActualizarUsuarioControllers
 from controllers import ConsultaDispositivoOrdenControllers
 from controllers import ActualizarHistoriaControllers
 from controllers import ActualizarSalidaControllers
+from controllers import ConsultaEquipoControllers
 
 
 from controllers import ProductosBuscarControllers
@@ -40,6 +41,7 @@ routes = {"register": "/register", "register_controllers":RegisterControllers.as
 "actualizarUsuario": "/actualizarUsuario", "actualizarUsuario_controllers":ActualizarUsuarioControllers.as_view("actualizarUsuarios_api"),
 "cambioClave": "/cambioClave", "cambioClave_controllers":CambioClaveControllers.as_view("cambioClave_api"),
 "consultaDispositivoOrden": "/consultaOrdenServicio", "consultaDispositivoOrden_controllers":ConsultaDispositivoOrdenControllers.as_view("consultaDispositivoOrden_api"),
+"consultaEquipo": "/consultaEquipo", "consultaEquipo_controllers":ConsultaEquipoControllers.as_view("consultaEquipo_api"),
 "actualizarHistoria": "/actualizarHistoria", "actualizarHistoria_controllers":ActualizarHistoriaControllers.as_view("actualizarHistoria_api"),
 "actualizarSalida": "/actualizarSalida", "actualizarSalida_controllers":ActualizarSalidaControllers.as_view("actualizarSalida_api"),
 "buscarProductos": "/buscarProductos", "buscarProductos_controllers":ProductosBuscarControllers.as_view("buscarProductos_api")

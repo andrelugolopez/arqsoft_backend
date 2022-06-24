@@ -235,6 +235,25 @@ class ConsultaDispositivoOrdenControllers(MethodView):
         tarea.pop("_id")        
         return jsonify({'data':tarea}), 200
 
+class ConsultaEquipoControllers(MethodView):
+    def get(self):
+        serEquipo = request.args.get("serial")
+        print ("consulta por serial",serEquipo)
+        #consulta base de datos
+        MONGO_HOST="jhtserverconnection.ddns.net"
+        MONGO_PUERTO="39011"
+        MONGO_TIEMPO_FUERA=1000
+        MONGO_URI="mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/"
+        cliente=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
+
+        mydb = cliente[ "dbproductos"]
+        mycol = mydb[ "historicos"]
+
+        myquery = { "serialEquipo": serEquipo }
+        equipo = mycol.find_one(myquery)
+        equipo.pop("_id")        
+        return jsonify({'data':equipo}), 200
+
 class ConsultaTecnicosControllers(MethodView):
     def get(self):
         conexion=crear_conexion()
