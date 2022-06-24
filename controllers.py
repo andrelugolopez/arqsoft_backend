@@ -218,7 +218,6 @@ class ConsultaOrdenTecnicosControllers(MethodView):
 
 class ConsultaDispositivoOrdenControllers(MethodView):
     def get(self):
-        
         codigo = request.args.get("orden")
         print ("consulta las ordenes",codigo)
         #consulta base de datos
@@ -572,6 +571,22 @@ class ActualizarUsuarioControllers(MethodView):
             except:
                 return jsonify({"Status": "TOKEN NO VALIDO"}), 403
         return jsonify({"Status": "No ha enviado un token"}), 403
+
+class ActualizarHistoriaControllers(MethodView):
+    def post(self):
+        content = request.get_json()
+        codigo = content.get("ordenServio")
+        escalarservicio = content.get("escalar")
+        reporte = content.get("reporte")
+        MONGO_HOST="jhtserverconnection.ddns.net"
+        MONGO_PUERTO="39011"
+        MONGO_TIEMPO_FUERA=1000
+        #conexion al servidor y a la base de datos de mongo.
+        myclient= pymongo.MongoClient("mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/")
+        mydb= myclient["dbproductos"]
+        mycol = mydb["historicos"]
+        mycol.update_one({ "ordenServicio":codigo}, {"$set": {"diagnosticoDetallado":reporte }})
+        return jsonify({"Status": "Historia Actualizada"}), 201
 
 class TokenContrasenaControllers(MethodView):
     def post(self):
