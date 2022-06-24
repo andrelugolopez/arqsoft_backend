@@ -39,6 +39,42 @@ def crear_conexion():
 create_register_schema = CreateRegisterSchema()
 create_login_schema = CreateLoginSchema()
 
+class LoginControllers(MethodView):
+    def post(self):
+        print ("login y creacion de jwt para navegacion")
+        content = request.get_json()
+        #Instanciar la clase
+        create_login_schema = CreateLoginSchema()
+        errors = create_login_schema.validate(content)
+        if errors:
+            return errors, 400
+        clave = content.get("password")
+        correo = content.get("email")
+        print(content.get("password"), correo)
+        conexion=crear_conexion()
+        cursor = conexion.cursor()
+        cursor.execute(
+            "SELECT clave,correo,nombres,apellidos,rol,documento FROM usuarios WHERE correo=%s", (correo,)
+        )
+        auto = cursor.fetchone()
+        conexion.close()
+        print( "datos", auto)
+        if auto==None:
+            return jsonify({"Status": "usuario no registrado"}), 400
+        
+        if (auto[1]==correo):
+            if  bcrypt.checkpw(clave.encode('utf8'), auto[0].encode('utf8')):
+                encoded_jwt = jwt.encode(
+                    {'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=3600),
+                    'email': correo,
+                    'user':auto[2] ,
+                    'rol':auto[4]}, 
+                    KEY_TOKEN_AUTH , algorithm='HS256')
+
+                return jsonify({"Status": "login exitoso","into": encoded_jwt,'Nuat':auto[2],'n3yB6PZnGE8n7F':auto[4],'doc':auto[5]}), 200
+            else:
+                return jsonify({"Status": "Clave incorrecta"}), 403
+
 
 class RegisterControllers(MethodView):
     def post(self):
@@ -131,42 +167,6 @@ class ConsultaUsuarioControllers(MethodView):
         else:
             return jsonify({"Status":"datos de usuario","data":auto}), 200
 
-class LoginControllers(MethodView):
-    def post(self):
-        print ("login y creacion de jwt para navegacion")
-        content = request.get_json()
-        #Instanciar la clase
-        create_login_schema = CreateLoginSchema()
-        errors = create_login_schema.validate(content)
-        if errors:
-            return errors, 400
-        clave = content.get("password")
-        correo = content.get("email")
-        print(content.get("password"), correo)
-        conexion=crear_conexion()
-        cursor = conexion.cursor()
-        cursor.execute(
-            "SELECT clave,correo,nombres,apellidos,rol,documento FROM usuarios WHERE correo=%s", (correo,)
-        )
-        auto = cursor.fetchone()
-        conexion.close()
-        print( "datos", auto)
-        if auto==None:
-            return jsonify({"Status": "usuario no registrado"}), 400
-        
-        if (auto[1]==correo):
-            if  bcrypt.checkpw(clave.encode('utf8'), auto[0].encode('utf8')):
-                encoded_jwt = jwt.encode(
-                    {'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=3600),
-                    'email': correo,
-                    'user':auto[2] ,
-                    'rol':auto[4]}, 
-                    KEY_TOKEN_AUTH , algorithm='HS256')
-
-                return jsonify({"Status": "login exitoso","into": encoded_jwt,'Nuat':auto[2],'n3yB6PZnGE8n7F':auto[4],'doc':auto[5]}), 200
-            else:
-                return jsonify({"Status": "Clave incorrecta"}), 403
-
 class ConsultaDiagnosticoControllers(MethodView):
     def get(self):
         print ("consulta las ordenes de servicio asignadas al tecnico")
@@ -190,8 +190,81 @@ class ConsultaDiagnosticoControllers(MethodView):
             ordenesOutput.append({x:orden[x] for x in orden if x not in keys})
         print("Lista de ordenes",ordenes)
         return jsonify({'data':ordenesOutput}), 200
+
+class ConsultaOrdenTecnicosControllers(MethodView):
+    def get(self):
+        print ("consulta todos los tecnicos con ordenes activas")
+        nombreTec= request.args.get("tecnico") # asi es que envia por cabecera la categoría seleccionada - headers idproducto - R001
+        #consulta base de datos
+        MONGO_HOST="jhtserverconnection.ddns.net"
+        MONGO_PUERTO="39011"
+        MONGO_TIEMPO_FUERA=1000
+        MONGO_URI="mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/"
+        cliente=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
+
+        mydb = cliente[ "dbproductos"]
+        mycol = mydb[ "historicos"]
+
+        myquery = { "nombreTecnico": { "$regex": nombreTec} }
+        tecnicos = mycol.find(myquery)
+
+        keys = ["_id"]
+        output = []
+        for tecnico in tecnicos:
+            output.append({x:tecnico[x] for x in tecnico if x not in keys})
+        print("imgen a mostrar",tecnico["rutaimagen"])
+        print("Lista de productos",tecnicos)
+        return jsonify({'data':output}), 200
 ## para el modulo de tienda cargar los productos de la base de datos
 #http://127.0.0.1:5000/productos/tipo=?R o P o E
+
+class ConsultaTecnicosControllers(MethodView):
+    def get(self):
+        conexion=crear_conexion()
+        cursor = conexion.cursor()
+        cursor.execute(
+            f" SELECT nombres FROM usuarios WHERE rol like '{'H7qm7gQr6DBGfM'}%'")
+        listatecnicos=cursor.fetchall()
+        tecnicos = [tecnico[0] for tecnico in listatecnicos];
+        conexion.close()
+        return jsonify({"Status":"Lista de técnicos",'data':tecnicos}), 200
+        conexion.close()
+
+class ConsultaOrdenControllers(MethodView):
+    def post(self):
+        content = request.get_json()
+        correo = content.get("email")
+        nombres = content.get("nombres")
+        apellidos=content.get("apellidos")
+        telefono= content.get("telefono")
+        documento= content.get("cedula")
+        conexion=crear_conexion()
+        cursor = conexion.cursor(pymysql.cursors.DictCursor)
+        if(correo!=""):
+            sql = "SELECT correo,nombres,apellidos,documento,telefono FROM usuarios WHERE correo=%s"
+            adr= correo
+            cursor.execute(sql,adr) 
+            datos=cursor.fetchone()
+        elif(documento!=""):
+            sql = "SELECT correo,nombres,apellidos,documento,telefono FROM usuarios WHERE documento=%s"
+            adr= documento
+            cursor.execute(sql,adr) 
+            datos=cursor.fetchone()
+        elif(telefono!=""):
+            sql = "SELECT correo,nombres,apellidos,documento,telefono FROM usuarios WHERE telefono=%s"
+            adr= telefono
+            cursor.execute(sql,adr) 
+            datos=cursor.fetchone()
+            if datos==None:
+                sql = "UPDATE usuarios SET telefono = %s WHERE documento = %s"
+                val = (telefono,documento)
+                cursor.execute(sql,val)
+                print("numero telefonico actualizado")
+        if datos==None:
+            return jsonify({"Status": "El usuario no se encuentra registrado"}), 201
+        else :
+            return jsonify({"Status": "El usuario si esta registrado", "data":datos}), 200 
+
 
 class ProductosControllers(MethodView):
     def get(self):
@@ -220,50 +293,39 @@ class ProductosControllers(MethodView):
 
 ## consulta a la base de datos el producto y se le agrega al usuario
 #http://127.0.0.1:5000/productoId/id_producto=?R120 o P349 o E998
-class ConsultaOrdenTecnicosControllers(MethodView):
-    def get(self):
-        print ("consulta todos los tecnicos con ordenes activas")
-        nombreTec= request.args.get("tecnico") # asi es que envia por cabecera la categoría seleccionada - headers idproducto - R001
-        #consulta base de datos
-        MONGO_HOST="jhtserverconnection.ddns.net"
-        MONGO_PUERTO="39011"
-        MONGO_TIEMPO_FUERA=1000
-        MONGO_URI="mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/"
-        cliente=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
-
-        mydb = cliente[ "dbproductos"]
-        mycol = mydb[ "historicos"]
-
-        myquery = { "nombreTecnico": { "$regex": nombreTec} }
-        tecnicos = mycol.find(myquery)
-
-        keys = ["_id"]
-        output = []
-        for tecnico in tecnicos:
-            output.append({x:tecnico[x] for x in tecnico if x not in keys})
-        print("imgen a mostrar",tecnico["rutaimagen"])
-        print("Lista de productos",tecnicos)
-        return jsonify({'data':output}), 200
-
 class ProductoIdControllers(MethodView):
     def get(self):
-        print ("consulta todos los productos de la tienda")
+        print ("consulta un producto de la tienda")
         id_producto=request.args.get("idproducto") # asi es que envia por cabecera la categoría seleccionada - headers idproducto - R001
         MONGO_HOST="jhtserverconnection.ddns.net"
         MONGO_PUERTO="39011"
         MONGO_TIEMPO_FUERA=1000
-        MONGO_URI="mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/"
-        producto=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
-
-        mydb = producto["dbproductos"]
+        myclient= pymongo.MongoClient("mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/")
+        mydb= myclient["dbproductos"]
         mycol = mydb["productos"]
-
-        myquery = { "idproducto": id_producto  }
-        info = mycol.find(myquery)
-        keys = ["_id"]
-        producto=producto not in keys
-        print("dato del producto",producto)
+        producto=mycol.find_one({ "idproducto":id_producto})
+        producto.pop("_id")
         return jsonify({'status':'envio ok','data':producto}), 200
+
+#http://127.0.0.1:5000/buscarProductos
+class ProductosBuscarControllers(MethodView):
+    def get(self):
+        nombre = request.args.get("buscarproducto")
+        MONGO_HOST="jhtserverconnection.ddns.net"
+        MONGO_PUERTO="39011"
+        MONGO_TIEMPO_FUERA=1000
+        MONGO_URI="mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/"
+        mongo=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
+        mydb = mongo["dbproductos"]
+        mycol = mydb["productos"]
+        myquery = { "nombre": { "$regex": f"^{nombre}" } }  
+        result = mycol.find(myquery)
+        keys = ["_id"]
+        lista_productos = []
+        for producto in result:
+            lista_productos.append({ llave:producto[llave] for llave in producto if llave not in keys })
+        print("dato del producto",lista_productos)
+        return jsonify({'status':'Lista de productos','data':lista_productos}), 200
 
 ## para modulo admin, creacion de productos
 class CrearControllers(MethodView):
@@ -424,53 +486,6 @@ class OrdenServicioControllers(MethodView):
         print("datos guardados en mongo", datos)
         return jsonify({"Status": "Orden de servicio almacenada correctamente"}), 200
 
-class ConsultaTecnicosControllers(MethodView):
-    def get(self):
-        conexion=crear_conexion()
-        cursor = conexion.cursor()
-        cursor.execute(
-            f" SELECT nombres FROM usuarios WHERE rol like '{'H7qm7gQr6DBGfM'}%'")
-        listatecnicos=cursor.fetchall()
-        tecnicos = [tecnico[0] for tecnico in listatecnicos];
-        conexion.close()
-        return jsonify({"Status":"Lista de técnicos",'data':tecnicos}), 200
-        conexion.close()
-
-class ConsultaOrdenControllers(MethodView):
-    def post(self):
-        content = request.get_json()
-        correo = content.get("email")
-        nombres = content.get("nombres")
-        apellidos=content.get("apellidos")
-        telefono= content.get("telefono")
-        documento= content.get("cedula")
-        conexion=crear_conexion()
-        cursor = conexion.cursor(pymysql.cursors.DictCursor)
-        if(correo!=""):
-            sql = "SELECT correo,nombres,apellidos,documento,telefono FROM usuarios WHERE correo=%s"
-            adr= correo
-            cursor.execute(sql,adr) 
-            datos=cursor.fetchone()
-        elif(documento!=""):
-            sql = "SELECT correo,nombres,apellidos,documento,telefono FROM usuarios WHERE documento=%s"
-            adr= documento
-            cursor.execute(sql,adr) 
-            datos=cursor.fetchone()
-        elif(telefono!=""):
-            sql = "SELECT correo,nombres,apellidos,documento,telefono FROM usuarios WHERE telefono=%s"
-            adr= telefono
-            cursor.execute(sql,adr) 
-            datos=cursor.fetchone()
-            if datos==None:
-                sql = "UPDATE usuarios SET telefono = %s WHERE documento = %s"
-                val = (telefono,documento)
-                cursor.execute(sql,val)
-                print("numero telefonico actualizado")
-        if datos==None:
-            return jsonify({"Status": "El usuario no se encuentra registrado"}), 201
-        else :
-            return jsonify({"Status": "El usuario si esta registrado", "data":datos}), 200 
-
 ## para el modulo de tienda - asignación de técnico ***************************************************
 #http://127.0.0.1:5000/asignaciontecnico
 
@@ -507,17 +522,6 @@ class AsignacionTecnicoControllers(MethodView):
         conexion.close()
         return jsonify({"Status":"Diagnóstico",'data':mostradiagnostico}), 200
 
-
-class TokenContrasenaControllers(MethodView):
-    def post(self):
-        usuario="Querido usuario"
-        content = request.get_json()
-        email =content.get("email")
-        cod=gen_codigo(8)
-        korreo.send_correo(usuario,email,cod)
-        return jsonify({'Status':'Token generado','CodigoR':cod}), 200
-
-
 class ActualizarUsuarioControllers(MethodView):
     def post(self):
         content = request.get_json()
@@ -552,25 +556,11 @@ class ActualizarUsuarioControllers(MethodView):
                 return jsonify({"Status": "TOKEN NO VALIDO"}), 403
         return jsonify({"Status": "No ha enviado un token"}), 403
 
-
-#http://127.0.0.1:5000/buscarProductos
-class ProductosBuscarControllers(MethodView):
-    def get(self):
-        nombre = request.args.get("buscarproducto")
-        MONGO_HOST="jhtserverconnection.ddns.net"
-        MONGO_PUERTO="39011"
-        MONGO_TIEMPO_FUERA=1000
-        MONGO_URI="mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/"
-        mongo=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
-        mydb = mongo["dbproductos"]
-        mycol = mydb["productos"]
-        myquery = { "nombre": { "$regex": f"^{nombre}" } }  
-        result = mycol.find(myquery)
-        keys = ["_id"]
-        lista_productos = []
-        for producto in result:
-            lista_productos.append({ llave:producto[llave] for llave in producto if llave not in keys })
-        print("dato del producto",lista_productos)
-        return jsonify({'status':'Lista de productos','data':lista_productos}), 200
-    
-
+class TokenContrasenaControllers(MethodView):
+    def post(self):
+        usuario="Querido usuario"
+        content = request.get_json()
+        email =content.get("email")
+        cod=gen_codigo(8)
+        korreo.send_correo(usuario,email,cod)
+        return jsonify({'Status':'Token generado','CodigoR':cod}), 200
