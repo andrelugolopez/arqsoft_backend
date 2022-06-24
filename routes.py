@@ -16,6 +16,7 @@ from controllers import ConsultaOrdenTecnicosControllers
 from controllers import ConsultaUsuarioControllers
 from controllers import RegisterAdminControllers
 from controllers import ActualizarUsuarioControllers
+from controllers import ConsultaDispositivoOrdenControllers
 
 
 from controllers import ProductosBuscarControllers
@@ -38,5 +39,6 @@ routes = {"register": "/register", "register_controllers":RegisterControllers.as
 "consultaOrdenTecnicos": "/consultaOrdenTecnicos", "consultaOrdenTecnicos_controllers":ConsultaOrdenTecnicosControllers.as_view("consultaOrdenTecnicos_api"),
 "actualizarUsuario": "/actualizarUsuario", "actualizarUsuario_controllers":ActualizarUsuarioControllers.as_view("actualizarUsuarios_api"),
 "cambioClave": "/cambioClave", "cambioClave_controllers":CambioClaveControllers.as_view("cambioClave_api"),
+"consultaDispositivoOrden": "/consultaOrdenServicio", "consultaDispositivoOrden_controllers":ConsultaDispositivoOrdenControllers.as_view("consultaDispositivoOrden_api"),
 "buscarProductos": "/buscarProductos", "buscarProductos_controllers":ProductosBuscarControllers.as_view("buscarProductos_api")
 }

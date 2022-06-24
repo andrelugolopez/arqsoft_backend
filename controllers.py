@@ -215,8 +215,26 @@ class ConsultaOrdenTecnicosControllers(MethodView):
         print("imgen a mostrar",tecnico["rutaimagen"])
         print("Lista de productos",tecnicos)
         return jsonify({'data':output}), 200
-## para el modulo de tienda cargar los productos de la base de datos
-#http://127.0.0.1:5000/productos/tipo=?R o P o E
+
+class ConsultaDispositivoOrdenControllers(MethodView):
+    def get(self):
+        
+        codigo = request.args.get("orden")
+        print ("consulta las ordenes",codigo)
+        #consulta base de datos
+        MONGO_HOST="jhtserverconnection.ddns.net"
+        MONGO_PUERTO="39011"
+        MONGO_TIEMPO_FUERA=1000
+        MONGO_URI="mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/"
+        cliente=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
+
+        mydb = cliente[ "dbproductos"]
+        mycol = mydb[ "historicos"]
+
+        myquery = { "ordenServicio": codigo }
+        tarea = mycol.find_one(myquery)
+        tarea.pop("_id")        
+        return jsonify({'data':tarea}), 200
 
 class ConsultaTecnicosControllers(MethodView):
     def get(self):
@@ -265,7 +283,8 @@ class ConsultaOrdenControllers(MethodView):
         else :
             return jsonify({"Status": "El usuario si esta registrado", "data":datos}), 200 
 
-
+## para el modulo de tienda cargar los productos de la base de datos
+#http://127.0.0.1:5000/productos/tipo=?R o P o E
 class ProductosControllers(MethodView):
     def get(self):
         print ("consulta todos los productos de la tienda")
@@ -421,8 +440,6 @@ class CambioClaveControllers(MethodView):
         conexion.close()
         return jsonify({'status':'clave actualizada satisfactoriamente'}), 200
 
-########## aporte faber
-
 class OrdenServicioControllers(MethodView):
     def post(self):
         rol="hbh2jFVsQM7RUy"
@@ -486,7 +503,7 @@ class OrdenServicioControllers(MethodView):
         print("datos guardados en mongo", datos)
         return jsonify({"Status": "Orden de servicio almacenada correctamente"}), 200
 
-## para el modulo de tienda - asignación de técnico ***************************************************
+## para el modulo de tienda - asignación de técnico *******
 #http://127.0.0.1:5000/asignaciontecnico
 
 class AsignacionTecnicoControllers(MethodView):
