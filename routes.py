@@ -7,7 +7,6 @@ from controllers import ProductosControllers
 from controllers import ProductoIdControllers
 from controllers import CambioClaveControllers
 from controllers import OrdenServicioControllers
-from controllers import AsignacionTecnicoControllers
 from controllers import TokenContrasenaControllers
 from controllers import ConsultaOrdenControllers
 from controllers import ConsultaTecnicosControllers
@@ -18,6 +17,7 @@ from controllers import RegisterAdminControllers
 from controllers import ActualizarUsuarioControllers
 from controllers import ConsultaDispositivoOrdenControllers
 from controllers import ActualizarHistoriaControllers
+from controllers import ActualizarSalidaControllers
 
 
 from controllers import ProductosBuscarControllers
@@ -32,7 +32,6 @@ routes = {"register": "/register", "register_controllers":RegisterControllers.as
 "productoId": "/productoId", "productoId_controllers":ProductoIdControllers.as_view("productoId_api"),
 "consultaDiagnostico": "/consultaDiagnostico", "consultaDiagnostico_controllers":ConsultaDiagnosticoControllers.as_view("consultaDiagnostico_api"),
 "ordenServicio": "/ordenServicio", "ordenServicio_controllers":OrdenServicioControllers.as_view("ordenServicio_api"),
-"asignacionTecnico": "/asignacionTecnico", "asignacionTecnico_controllers":AsignacionTecnicoControllers.as_view("asignacionTecnico_api"),
 "consultaTecnicos": "/consultaTecnicos", "consultaTecnicos_controllers":ConsultaTecnicosControllers.as_view("consultaTecnicos_api"),
 "consultaUsuario": "/consultaUsuario", "consultaUsuario_controllers":ConsultaUsuarioControllers.as_view("consultaUsuario_api"),
 "tokenContrasena": "/tokenContrasena", "tokenContrasena_controllers":TokenContrasenaControllers.as_view("tokenContrasena_api"),
@@ -42,5 +41,6 @@ routes = {"register": "/register", "register_controllers":RegisterControllers.as
 "cambioClave": "/cambioClave", "cambioClave_controllers":CambioClaveControllers.as_view("cambioClave_api"),
 "consultaDispositivoOrden": "/consultaOrdenServicio", "consultaDispositivoOrden_controllers":ConsultaDispositivoOrdenControllers.as_view("consultaDispositivoOrden_api"),
 "actualizarHistoria": "/actualizarHistoria", "actualizarHistoria_controllers":ActualizarHistoriaControllers.as_view("actualizarHistoria_api"),
+"actualizarSalida": "/actualizarSalida", "actualizarSalida_controllers":ActualizarSalidaControllers.as_view("actualizarSalida_api"),
 "buscarProductos": "/buscarProductos", "buscarProductos_controllers":ProductosBuscarControllers.as_view("buscarProductos_api")
 }

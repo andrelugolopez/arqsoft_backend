@@ -502,42 +502,6 @@ class OrdenServicioControllers(MethodView):
         print("datos guardados en mongo", datos)
         return jsonify({"Status": "Orden de servicio almacenada correctamente"}), 200
 
-## para el modulo de tienda - asignación de técnico *******
-#http://127.0.0.1:5000/asignaciontecnico
-
-class AsignacionTecnicoControllers(MethodView):
-    def post(self):
-        content = request.get_json()
-        #Campos del formulario
-        tipodispositivo = content.get("tipodispositivo")
-        codtecnico = request.args.get("id_tec")
-        nombretecnico = content.get("nombretecnico")
-        codservicio = request.args.get("codservicio")
-        escalarservicio = content.get("escalarservicio")
-        tipoespeciescalar = content.get("tipoespeciescalar")
-        diaginicial = content.get("diaginicial")
-        #consulta base de datos database_user
-        conexion=crear_conexion()
-        cursor = conexion.cursor()
-        #Se formatea la consulta y se envia parametro de consulta en un arreglo
-        cursor.execute(
-            f" SELECT * FROM usuarios WHERE id_tec like '{codtecnico}%'"
-            )
-        listatecnicos=cursor.fetchall()
-        print("Lista de técnicos",listatecnicos)
-        conexion.close()
-        return jsonify({"Status":"Lista de técnicos",'data':listatecnicos}), 200
-        conexion=crear_conexion_productos()
-        cursor = conexion.cursor()
-        #Se formatea la consulta y se envia parametro de consulta en un arreglo
-        cursor.execute(
-            f" SELECT * FROM asignaciontecnico WHERE codservicio =%s", (codservicio,)
-            )
-        mostradiagnostico=cursor.fetchone()
-        print("Diagnóstico",mostradiagnostico)
-        conexion.close()
-        return jsonify({"Status":"Diagnóstico",'data':mostradiagnostico}), 200
-
 class ActualizarUsuarioControllers(MethodView):
     def post(self):
         content = request.get_json()
@@ -578,6 +542,7 @@ class ActualizarHistoriaControllers(MethodView):
         codigo = content.get("ordenServio")
         escalarservicio = content.get("escalar")
         reporte = content.get("reporte")
+
         MONGO_HOST="jhtserverconnection.ddns.net"
         MONGO_PUERTO="39011"
         MONGO_TIEMPO_FUERA=1000
@@ -585,7 +550,24 @@ class ActualizarHistoriaControllers(MethodView):
         myclient= pymongo.MongoClient("mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/")
         mydb= myclient["dbproductos"]
         mycol = mydb["historicos"]
-        mycol.update_one({ "ordenServicio":codigo}, {"$set": {"diagnosticoDetallado":reporte }})
+        mycol.update_many({ "ordenServicio":codigo}, {"$set": {"diagnosticoDetallado":reporte },"$set": {"escalarServicio":escalarservicio}})
+        return jsonify({"Status": "Historia Actualizada"}), 201
+
+class ActualizarSalidaControllers(MethodView):
+    def post(self):
+        content = request.get_json()
+        serialequipo=request.get_json("serial")
+        entrega = content.get("observacion")
+
+        MONGO_HOST="jhtserverconnection.ddns.net"
+        MONGO_PUERTO="39011"
+        MONGO_TIEMPO_FUERA=1000
+        #conexion al servidor y a la base de datos de mongo.
+        myclient= pymongo.MongoClient("mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/")
+        mydb= myclient["dbproductos"]
+        mycol = mydb["historicos"]
+        mycol.update_many({ "serialEquipo":serialequipo}, {"$set": {"historicoCierre":entrega },"$set": {"estado":"cerrado"}})
+        print("¿¿¿¿¿¿¿",content)
         return jsonify({"Status": "Historia Actualizada"}), 201
 
 class TokenContrasenaControllers(MethodView):
