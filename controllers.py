@@ -207,7 +207,7 @@ class ProductosControllers(MethodView):
         mydb = cliente[ "dbproductos"]
         mycol = mydb[ "productos"]
 
-        myquery = { "idproducto": Tproducto }
+        myquery = { "idproducto": { "$regex": Tproducto} }
         productos = mycol.find(myquery)
 
         keys = ["_id"]
@@ -258,7 +258,7 @@ class ProductoIdControllers(MethodView):
         mydb = producto["dbproductos"]
         mycol = mydb["productos"]
 
-        myquery = { "idproducto": { "$regex": id_producto } }
+        myquery = { "idproducto": id_producto  }
         info = mycol.find(myquery)
         keys = ["_id"]
         producto=producto not in keys
