@@ -74,6 +74,7 @@ class LoginControllers(MethodView):
                 return jsonify({"Status": "login exitoso","into": encoded_jwt,'Nuat':auto[2],'n3yB6PZnGE8n7F':auto[4],'doc':auto[5]}), 200
             else:
                 return jsonify({"Status": "Clave incorrecta"}), 403
+        return jsonify({"Status": "Clave incorrecta"}), 403
 
 
 class RegisterControllers(MethodView):
@@ -397,16 +398,23 @@ class CrearControllers(MethodView):
         nombre = content.get("nombre")
         cantidad= content.get("cantidad")
         imagen=content.get("imagen")
+
         if (request.headers.get('Authorization')):
             token = request.headers.get('Authorization').split(" ")
             try:
                 data = jwt.decode(token[1], KEY_TOKEN_AUTH , algorithms=['HS256'])
                 if (data.get('rol')=='J8p4SBfJgRfZCo'):
-                    conexion=crear_conexionMongo()
-                    cursor = conexion.cursor()
-                    cursor.execute("INSERT INTO productos (idproducto,nombre,cantidad,precio,imagen) VALUES(%s,%s,%s,%s,%s)", (id_producto,nombre,cantidad,precio,imagen,))
-                    conexion.commit()
-                    conexion.close()
+
+                    MONGO_HOST="jhtserverconnection.ddns.net"
+                    MONGO_PUERTO="39011"
+                    MONGO_TIEMPO_FUERA=1000
+                    MONGO_URI="mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/"
+                    mongo=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
+                    mydb = mongo["dbproductos"]
+                    mycol = mydb["productos"]
+                    myproduc = { "idproducto": id_producto, "precio": float(precio) ,"nombre":nombre,"cantidad":int(cantidad),"rutaimagen":imagen }
+                    mycol.insert_one(myproduc)
+
                     print("--Artuculo guardado en la BD--")
                 else:
                     return jsonify({"Status": "No autorizado por token"}), 498
@@ -418,22 +426,29 @@ class CrearControllers(MethodView):
 ## para modulo admin, eliminar de productos
 class EliminarProductoControllers(MethodView):
     def get(self):
-        idproducto= request.args.get("idproe")
+        id_producto= request.args.get("idproe")
         print ("eliminar producto de la tienda")
         if (request.headers.get('Authorization')):
             token = request.headers.get('Authorization').split(" ")
             try:
                 data = jwt.decode(token[1], KEY_TOKEN_AUTH , algorithms=['HS256'])
                 if (data.get('rol')=='J8p4SBfJgRfZCo'):
-                    conexion=crear_conexionMongo()
-                    cursor = conexion.cursor()
-                    cursor.execute("DELETE FROM productos WHERE idproducto=%s",(idproducto,))
-                    conexion.commit()
-                    conexion.close()
+
+                    MONGO_HOST="jhtserverconnection.ddns.net"
+                    MONGO_PUERTO="39011"
+                    MONGO_TIEMPO_FUERA=1000
+                    MONGO_URI="mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/"
+                    mongo=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
+                    mydb = mongo["dbproductos"]
+                    mycol = mydb["productos"]
+
+                    myquery = { "idproducto":id_producto }
+                    mycol.delete_one(myquery)
+
                     print("--Artuculo eliminado de la BD--")
                 else:
-                    return jsonify({"Status": "No autorizado por token"}), 403
-                return jsonify({"Status": "Autorizado por token", "emailextraido": data.get("email"),}), 200
+                    return jsonify({"Status": "No autorizado por token"}), 498
+                return jsonify({"Status": "Autorizado por token"}), 202
             except:
                 return jsonify({"Status": "TOKEN NO VALIDO"}), 403
         return jsonify({"Status": "No ha enviado un token"}), 403
@@ -519,7 +534,7 @@ class OrdenServicioControllers(MethodView):
         else :
             print("usuario esta en base de datos")
             #return jsonify({"Status": "El usuario esta registrado"}), 200
-        nombreCompleto=nombreCliente +" "+ apellidosCliente
+        nombreCompleto=nombreCliente.capitalize() +" "+ apellidosCliente.capitalize()
         diagnostico= str(fecha) + " " + tiposervicio + " " + nombreTecnico + " " + " " + diagnosticoInicial
         MONGO_HOST="jhtserverconnection.ddns.net"
         MONGO_PUERTO="39011"
@@ -570,6 +585,44 @@ class ActualizarUsuarioControllers(MethodView):
                     conexion.close()
                     return jsonify({'status':'Usuario Actualizado Satisfactoriamente'}), 200
                     print("--Usuario Actualizado--")
+                else:
+                    return jsonify({"Status": "No autorizado por token"}), 498
+                return jsonify({"Status": "Autorizado por token"}), 202
+            except:
+                return jsonify({"Status": "TOKEN NO VALIDO"}), 403
+        return jsonify({"Status": "No ha enviado un token"}), 403
+
+class ActualizarProductoControllers(MethodView):
+    def post(self):
+        content = request.get_json()
+        id_producto = content.get("idproducto")
+        precio = content.get("precio")
+        nombre = content.get("nombre")
+        cantidad = content.get("cantidad")
+        imagen= content.get("imagen")
+        descipcion=content.get("descripcion")
+
+        print("llegada de datos del front",content)
+        if (request.headers.get('Authorization')):
+            token = request.headers.get('Authorization').split(" ")
+            try:
+                data = jwt.decode(token[1], KEY_TOKEN_AUTH , algorithms=['HS256'])
+                if (data.get('rol')==('J8p4SBfJgRfZCo')):
+                    
+                    MONGO_HOST="jhtserverconnection.ddns.net"
+                    MONGO_PUERTO="39011"
+                    MONGO_TIEMPO_FUERA=1000
+                    MONGO_URI="mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/"
+                    mongo=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
+                    mydb = mongo["dbproductos"]
+                    mycol = mydb["productos"]
+                    myquery = { "idproducto": id_producto }
+                    newvalues = { "$set": { "precio": float(precio) ,"nombre":nombre,"cantidad":int(cantidad),"rutaimagen":imagen } }
+
+                    mycol.update_many(myquery, newvalues)
+
+                    return jsonify({'status':'Usuario Actualizado Satisfactoriamente'}), 200
+                    print("--Articulo Actualizado--")
                 else:
                     return jsonify({"Status": "No autorizado por token"}), 498
                 return jsonify({"Status": "Autorizado por token"}), 202

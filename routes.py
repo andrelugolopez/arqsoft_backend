@@ -20,6 +20,7 @@ from controllers import ActualizarHistoriaControllers
 from controllers import ActualizarSalidaControllers
 from controllers import ConsultaEquipoControllers
 from controllers import ConsultaHistoricoUsuarioControllers
+from controllers import ActualizarProductoControllers
 
 
 from controllers import ProductosBuscarControllers
@@ -46,5 +47,6 @@ routes = {"register": "/register", "register_controllers":RegisterControllers.as
 "actualizarHistoria": "/actualizarHistoria", "actualizarHistoria_controllers":ActualizarHistoriaControllers.as_view("actualizarHistoria_api"),
 "consultaHistoria": "/consultaHistoria", "consultaHistoria_controllers":ConsultaHistoricoUsuarioControllers.as_view("consultaHistoria_api"),
 "actualizarSalida": "/actualizarSalida", "actualizarSalida_controllers":ActualizarSalidaControllers.as_view("actualizarSalida_api"),
+"actualizarProducto": "/actualizarProducto", "actualizarProducto_controllers":ActualizarProductoControllers.as_view("actualizarProducto_api"),
 "buscarProductos": "/buscarProductos", "buscarProductos_controllers":ProductosBuscarControllers.as_view("buscarProductos_api")
 }
