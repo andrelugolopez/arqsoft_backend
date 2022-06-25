@@ -191,6 +191,30 @@ class ConsultaDiagnosticoControllers(MethodView):
         print("Lista de ordenes",ordenes)
         return jsonify({'data':ordenesOutput}), 200
 
+class ConsultaHistoricoUsuarioControllers(MethodView):
+    def get(self):
+        print ("consulta las ordenes de servicio asignadas al tecnico")
+        nombre = request.args.get("nombre")
+        #consulta base de datos
+        MONGO_HOST="jhtserverconnection.ddns.net"
+        MONGO_PUERTO="39011"
+        MONGO_TIEMPO_FUERA=1000
+        MONGO_URI="mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/"
+        cliente=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
+
+        mydb = cliente[ "dbproductos"]
+        mycol = mydb[ "historicos"]
+
+        myquery = { "nombreCliente":{"$regex": f"^{nombre}"},"estado":"abierta" }
+        ordenes = mycol.find(myquery)
+
+        keys = ["_id"]
+        ordenesOutput = []
+        for orden in ordenes:
+            ordenesOutput.append({x:orden[x] for x in orden if x not in keys})
+        print("Lista de ordenes",ordenes)
+        return jsonify({'data':ordenesOutput}), 200
+
 class ConsultaOrdenTecnicosControllers(MethodView):
     def get(self):
         print ("consulta todos los tecnicos con ordenes activas")
@@ -505,7 +529,7 @@ class OrdenServicioControllers(MethodView):
         mycol = mydb["historicos"]
         mydict = {  "nombreCliente":str(nombreCompleto),
                     "telefono":str(telefono),
-                    "ordenServicio":str(ordenServicio),                    
+                    "ordenServicio":str(ordenServicio),                   
                     "nombreTecnico":str(nombreTecnico),
                     "serialEquipo":str(serialEquipo),
                     "marcaEquipo":str(marcaEquipo),
