@@ -181,7 +181,7 @@ class ConsultaDiagnosticoControllers(MethodView):
         mydb = cliente[ "dbproductos"]
         mycol = mydb[ "historicos"]
 
-        myquery = { "nombreTecnico": nombreTec,"estado":"abierto" }
+        myquery = { "nombreTecnico": nombreTec,"estado":"abierta" }
         ordenes = mycol.find(myquery)
 
         keys = ["_id"]
@@ -205,14 +205,13 @@ class ConsultaOrdenTecnicosControllers(MethodView):
         mydb = cliente[ "dbproductos"]
         mycol = mydb[ "historicos"]
 
-        myquery = { "nombreTecnico": { "$regex": nombreTec} }
+        myquery = { "nombreTecnico":nombreTec,"estado":"cerrada" }
         tecnicos = mycol.find(myquery)
 
         keys = ["_id"]
         output = []
         for tecnico in tecnicos:
             output.append({x:tecnico[x] for x in tecnico if x not in keys})
-        print("imgen a mostrar",tecnico["rutaimagen"])
         print("Lista de productos",tecnicos)
         return jsonify({'data':output}), 200
 
@@ -496,8 +495,8 @@ class OrdenServicioControllers(MethodView):
         else :
             print("usuario esta en base de datos")
             #return jsonify({"Status": "El usuario esta registrado"}), 200
-        nombreCompleto=nombreCliente + apellidosCliente
-        diagnostico= str(fecha) + tiposervicio + nombreTecnico
+        nombreCompleto=nombreCliente +" "+ apellidosCliente
+        diagnostico= str(fecha) + " " + tiposervicio + " " + nombreTecnico + " " + " " + diagnosticoInicial
         MONGO_HOST="jhtserverconnection.ddns.net"
         MONGO_PUERTO="39011"
         MONGO_TIEMPO_FUERA=1000
@@ -512,9 +511,8 @@ class OrdenServicioControllers(MethodView):
                     "marcaEquipo":str(marcaEquipo),
                     "tipoDispositivo":str(tipoDispositivo),
                     "accesoriosDispositivos":str(accesoriosDispositivos),
-                    "diagnosticoInicial":str(diagnosticoInicial),
-                    "diagnosticoDetallado":str(diagnostico),
-                    "fecha":"jueves",
+                    "diagnosticoInicial":str(diagnostico),
+                    "fecha":str(fecha),
                     "estado":"abierta"
                     }
         datos = mycol.insert_one(mydict)
@@ -577,6 +575,8 @@ class ActualizarSalidaControllers(MethodView):
         content = request.get_json()
         serialequipo=request.get_json("serial")
         entrega = content.get("observacion")
+        fecha = content.get("fecha")
+        salida= str(feha)+" "+entrega
 
         MONGO_HOST="jhtserverconnection.ddns.net"
         MONGO_PUERTO="39011"
@@ -585,7 +585,7 @@ class ActualizarSalidaControllers(MethodView):
         myclient= pymongo.MongoClient("mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/")
         mydb= myclient["dbproductos"]
         mycol = mydb["historicos"]
-        mycol.update_many({ "serialEquipo":serialequipo}, {"$set": {"historicoCierre":entrega },"$set": {"estado":"cerrado"}})
+        mycol.update_many({ "serialEquipo":serialequipo}, {"$set": {"historicoCierre":salida },"$set": {"estado":"cerrado"}})
         print("¿¿¿¿¿¿¿",content)
         return jsonify({"Status": "Historia Actualizada"}), 201
 
