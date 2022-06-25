@@ -71,8 +71,8 @@ class LoginControllers(MethodView):
                     'rol':auto[4]}, 
                     KEY_TOKEN_AUTH , algorithm='HS256')
 
-#              return jsonify({"Status": "login exitoso","into": encoded_jwt,'Nuat':auto[2],'n3yB6PZnGE8n7F':auto[4],'doc':auto[5]}), 200
-                return jsonify({"Status": "login exitoso","into": encoded_jwt.decode('UTF-8'),'Nuat':auto[2],'n3yB6PZnGE8n7F':auto[4],'doc':auto[5]}), 200
+                return jsonify({"Status": "login exitoso","into": encoded_jwt,'Nuat':auto[2],'n3yB6PZnGE8n7F':auto[4],'doc':auto[5]}), 200
+                #return jsonify({"Status": "login exitoso","into": encoded_jwt.decode('UTF-8'),'Nuat':auto[2],'n3yB6PZnGE8n7F':auto[4],'doc':auto[5]}), 200
             else:
                 return jsonify({"Status": "Clave incorrecta"}), 403
         return jsonify({"Status": "Clave incorrecta"}), 403
@@ -394,11 +394,14 @@ class CrearControllers(MethodView):
     def post(self):
         print ("crear producto en la tienda")
         content = request.get_json()
-        id_producto=content.get("idproducto")
+        numero=content.get("idproducto")
+        tipodispositivo=content.get(tipodispositivo)
         precio = content.get("precio")
         nombre = content.get("nombre")
         cantidad= content.get("cantidad")
         imagen=content.get("imagen")
+
+        id_producto=tipodispositivo+numero
 
         if (request.headers.get('Authorization')):
             token = request.headers.get('Authorization').split(" ")
