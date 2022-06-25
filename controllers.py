@@ -71,7 +71,8 @@ class LoginControllers(MethodView):
                     'rol':auto[4]}, 
                     KEY_TOKEN_AUTH , algorithm='HS256')
 
-                return jsonify({"Status": "login exitoso","into": encoded_jwt,'Nuat':auto[2],'n3yB6PZnGE8n7F':auto[4],'doc':auto[5]}), 200
+#              return jsonify({"Status": "login exitoso","into": encoded_jwt,'Nuat':auto[2],'n3yB6PZnGE8n7F':auto[4],'doc':auto[5]}), 200
+                return jsonify({"Status": "login exitoso","into": encoded_jwt.decode('UTF-8'),'Nuat':auto[2],'n3yB6PZnGE8n7F':auto[4],'doc':auto[5]}), 200
             else:
                 return jsonify({"Status": "Clave incorrecta"}), 403
         return jsonify({"Status": "Clave incorrecta"}), 403
