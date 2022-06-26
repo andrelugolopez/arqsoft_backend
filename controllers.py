@@ -366,8 +366,10 @@ class ProductoIdControllers(MethodView):
         mydb= myclient["dbproductos"]
         mycol = mydb["productos"]
         producto=mycol.find_one({ "idproducto":id_producto})
-        producto.pop("_id")
-        return jsonify({'status':'envio ok','data':producto}), 200
+        if(producto!=None):
+            producto.pop("_id")
+            return jsonify({'status':'envio ok','data':producto}), 200
+        return jsonify({'status':'Producto no encontrado'}), 403
 
 #http://127.0.0.1:5000/buscarProductos
 class ProductosBuscarControllers(MethodView):
