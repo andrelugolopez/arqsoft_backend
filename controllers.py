@@ -395,7 +395,7 @@ class CrearControllers(MethodView):
         print ("crear producto en la tienda")
         content = request.get_json()
         numero=content.get("idproducto")
-        tipodispositivo=content.get(tipodispositivo)
+        tipodispositivo=content.get("tipodispositivo")
         precio = content.get("precio")
         nombre = content.get("nombre")
         cantidad= content.get("cantidad")
@@ -446,7 +446,7 @@ class EliminarProductoControllers(MethodView):
                     mydb = mongo["dbproductos"]
                     mycol = mydb["productos"]
 
-                    myquery = { "idproducto":id_producto }
+                    myquery = { "idproducto":id_producto}
                     mycol.delete_one(myquery)
 
                     print("--Artuculo eliminado de la BD--")
