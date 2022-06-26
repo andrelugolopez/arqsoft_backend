@@ -602,14 +602,18 @@ class ActualizarUsuarioControllers(MethodView):
 class ActualizarProductoControllers(MethodView):
     def post(self):
         content = request.get_json()
+        numero=content.get("idproducto")
+        tipodispositivo=content.get("tipodispositivo")
         id_producto = content.get("idproducto")
         precio = content.get("precio")
         nombre = content.get("nombre")
         cantidad = content.get("cantidad")
         imagen= content.get("imagen")
-        descipcion=content.get("descripcion")
+        descripcion=content.get("descripcionproductos")
 
-        print("llegada de datos del front",content)
+        id_producto=str(tipodispositivo+numero)
+
+        print("llegada de datos del front",id_producto)
         if (request.headers.get('Authorization')):
             token = request.headers.get('Authorization').split(" ")
             try:
@@ -624,7 +628,7 @@ class ActualizarProductoControllers(MethodView):
                     mydb = mongo["dbproductos"]
                     mycol = mydb["productos"]
                     myquery = { "idproducto": id_producto }
-                    newvalues = { "$set": { "precio": float(precio) ,"nombre":nombre,"cantidad":int(cantidad),"rutaimagen":imagen } }
+                    newvalues = { "$set": { "precio": float(precio) ,"nombre":nombre,"cantidad":int(cantidad),"rutaimagen":imagen, "descripcionproductos":descripcion } }
 
                     mycol.update_many(myquery, newvalues)
 
