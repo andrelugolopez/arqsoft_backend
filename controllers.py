@@ -402,6 +402,7 @@ class CrearControllers(MethodView):
         nombre = content.get("nombre")
         cantidad= content.get("cantidad")
         imagen=content.get("imagen")
+        descripcion=content.get("descripcionproductos")
 
         id_producto=tipodispositivo+numero
 
@@ -418,7 +419,7 @@ class CrearControllers(MethodView):
                     mongo=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
                     mydb = mongo["dbproductos"]
                     mycol = mydb["productos"]
-                    myproduc = { "idproducto": id_producto, "precio": float(precio) ,"nombre":nombre,"cantidad":int(cantidad),"rutaimagen":imagen }
+                    myproduc = { "idproducto": id_producto, "precio": float(precio) ,"nombre":nombre,"cantidad":int(cantidad),"rutaimagen":imagen,"descripcionproductos":descripcion }
                     mycol.insert_one(myproduc)
 
                     print("--Artuculo guardado en la BD--")
