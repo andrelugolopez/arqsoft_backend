@@ -279,6 +279,25 @@ class ConsultaEquipoControllers(MethodView):
         equipo.pop("_id")        
         return jsonify({'data':equipo}), 200
 
+class ConsultaEstadoOrdenControllers(MethodView):
+    def get(self):
+        orden = request.args.get("orden")
+        print ("consulta por serial",orden)
+        #consulta base de datos
+        MONGO_HOST="jhtserverconnection.ddns.net"
+        MONGO_PUERTO="39011"
+        MONGO_TIEMPO_FUERA=1000
+        MONGO_URI="mongodb://"+MONGO_HOST+":"+MONGO_PUERTO+"/"
+        cliente=pymongo.MongoClient(MONGO_URI,serverSelectionTimeoutMS=MONGO_TIEMPO_FUERA)
+
+        mydb = cliente[ "dbproductos"]
+        mycol = mydb[ "historicos"]
+
+        myquery = { "ordenServicio": orden }
+        historia = mycol.find_one(myquery)
+        historia.pop("_id")        
+        return jsonify({'data':historia}), 200
+
 class ConsultaTecnicosControllers(MethodView):
     def get(self):
         conexion=crear_conexion()
@@ -662,9 +681,9 @@ class ActualizarSalidaControllers(MethodView):
     def post(self):
         content = request.get_json()
         serialequipo=request.get_json("serial")
-        entrega = content.get("observacion")
+        entrega = content.get("Observacion")
         fecha = content.get("fecha")
-        salida= str(feha)+" "+entrega
+        salida= str(fecha)+" "+entrega
 
         MONGO_HOST="jhtserverconnection.ddns.net"
         MONGO_PUERTO="39011"
@@ -674,7 +693,6 @@ class ActualizarSalidaControllers(MethodView):
         mydb= myclient["dbproductos"]
         mycol = mydb["historicos"]
         mycol.update_many({ "serialEquipo":serialequipo}, {"$set": {"historicoCierre":salida },"$set": {"estado":"cerrado"}})
-        print("¿¿¿¿¿¿¿",content)
         return jsonify({"Status": "Historia Actualizada"}), 201
 
 class TokenContrasenaControllers(MethodView):
