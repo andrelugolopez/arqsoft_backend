@@ -21,8 +21,7 @@ from controllers import ActualizarSalidaControllers
 from controllers import ConsultaEquipoControllers
 from controllers import ConsultaHistoricoUsuarioControllers
 from controllers import ActualizarProductoControllers
-
-
+from controllers import ConsultaEstadoOrdenControllers
 from controllers import ProductosBuscarControllers
 
 routes = {"register": "/register", "register_controllers":RegisterControllers.as_view("register_api"),
@@ -37,6 +36,7 @@ routes = {"register": "/register", "register_controllers":RegisterControllers.as
 "ordenServicio": "/ordenServicio", "ordenServicio_controllers":OrdenServicioControllers.as_view("ordenServicio_api"),
 "consultaTecnicos": "/consultaTecnicos", "consultaTecnicos_controllers":ConsultaTecnicosControllers.as_view("consultaTecnicos_api"),
 "consultaUsuario": "/consultaUsuario", "consultaUsuario_controllers":ConsultaUsuarioControllers.as_view("consultaUsuario_api"),
+"consultaEstadoOrden": "/consultaEstadoOrden", "consultaEstadoOrden_controllers":ConsultaEstadoOrdenControllers.as_view("consultaEstadoOrden_api"),
 "tokenContrasena": "/tokenContrasena", "tokenContrasena_controllers":TokenContrasenaControllers.as_view("tokenContrasena_api"),
 "consultaOrden": "/consultaOrden", "consultaOrden_controllers":ConsultaOrdenControllers.as_view("consultaOrden_api"),
 "consultaOrdenTecnicos": "/consultaOrdenTecnicos", "consultaOrdenTecnicos_controllers":ConsultaOrdenTecnicosControllers.as_view("consultaOrdenTecnicos_api"),
