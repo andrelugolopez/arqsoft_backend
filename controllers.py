@@ -47,7 +47,7 @@ class LoginControllers(MethodView):
         create_login_schema = CreateLoginSchema()
         errors = create_login_schema.validate(content)
         if errors:
-            return errors, 400
+            return errors, 403
         clave = content.get("password")
         correo = content.get("email")
         print(content.get("password"), correo)
@@ -60,7 +60,7 @@ class LoginControllers(MethodView):
         conexion.close()
         print( "datos", auto)
         if auto==None:
-            return jsonify({"Status": "usuario no registrado"}), 400
+            return jsonify({"Status": "usuario no registrado"}), 403
         
         if (auto[1]==correo):
             if  bcrypt.checkpw(clave.encode('utf8'), auto[0].encode('utf8')):
@@ -75,7 +75,7 @@ class LoginControllers(MethodView):
                 #return jsonify({"Status": "login exitoso","into": encoded_jwt.decode('UTF-8'),'Nuat':auto[2],'n3yB6PZnGE8n7F':auto[4],'doc':auto[5]}), 200
             else:
                 return jsonify({"Status": "Clave incorrecta"}), 403
-        return jsonify({"Status": "Clave incorrecta"}), 403
+        return jsonify({"Status": "Clave incorrecta"}),403
 
 
 class RegisterControllers(MethodView):
@@ -92,7 +92,7 @@ class RegisterControllers(MethodView):
         hash_password = bcrypt.hashpw(bytes(str(password), encoding= 'utf-8'), salt)
         errors = create_register_schema.validate(content)
         if errors:
-            return errors, 400
+            return errors, 403
         conexion=crear_conexion()
         print(conexion)
         cursor = conexion.cursor()
@@ -108,7 +108,7 @@ class RegisterControllers(MethodView):
         else :    
             conexion.commit()
             conexion.close()
-            return jsonify({"Status": "El usuario ya esta registrado"}), 200
+            return jsonify({"Status": "El usuario ya esta registrado"}), 403
 
 class RegisterAdminControllers(MethodView):
     def post(self):
@@ -165,7 +165,7 @@ class ConsultaUsuarioControllers(MethodView):
         auto = cursor.fetchone()
         conexion.close()
         if auto==None:
-            return jsonify({"Status": "usuario no registrado"}), 400
+            return jsonify({"Status": "usuario no registrado"}), 403
         else:
             return jsonify({"Status":"datos de usuario","data":auto}), 200
 
@@ -295,7 +295,7 @@ class ConsultaEstadoOrdenControllers(MethodView):
 
         myquery = { "ordenServicio": orden }
         historia = mycol.find_one(myquery)
-        historia.pop("_id")        
+        historia.pop("_id")
         return jsonify({'data':historia}), 200
 
 class ConsultaTecnicosControllers(MethodView):
@@ -512,7 +512,7 @@ class CambioClaveControllers(MethodView):
         hash_password = bcrypt.hashpw(bytes(str(newPassword), encoding= 'utf-8'), salt)
         errors = create_login_schema.validate(content)
         if errors:
-            return errors, 400
+            return errors, 403
         conexion=crear_conexion()
         cursor = conexion.cursor()
         sql = "UPDATE usuarios SET clave = %s WHERE correo = %s"
