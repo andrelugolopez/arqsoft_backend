@@ -255,7 +255,7 @@ class ConsultaDispositivoOrdenControllers(MethodView):
         mydb = cliente[ "dbproductos"]
         mycol = mydb[ "historicos"]
 
-        myquery = { "ordenServicio": codigo }
+        myquery = { "ordenServicio": codigo,"estado":"abierta" }
         tarea = mycol.find_one(myquery)
         tarea.pop("_id")        
         return jsonify({'data':tarea}), 200
@@ -703,3 +703,9 @@ class TokenContrasenaControllers(MethodView):
         cod=gen_codigo(8)
         korreo.send_correo(usuario,email,cod)
         return jsonify({'Status':'Token generado','CodigoR':cod}), 200
+
+class FacturacionControllers(MethodView):
+    def post(self):
+        content = request.get_json()
+        print(content)
+        return jsonify({'Status':'dato para facturacion'}), 200

@@ -23,6 +23,7 @@ from controllers import ConsultaHistoricoUsuarioControllers
 from controllers import ActualizarProductoControllers
 from controllers import ConsultaEstadoOrdenControllers
 from controllers import ProductosBuscarControllers
+from controllers import FacturacionControllers
 
 routes = {"register": "/register", "register_controllers":RegisterControllers.as_view("register_api"),
 "registerAdmin": "/registerAdmin", "registerAdmin_controllers":RegisterAdminControllers.as_view("registerAdmin_api"),
@@ -48,5 +49,6 @@ routes = {"register": "/register", "register_controllers":RegisterControllers.as
 "consultaHistoria": "/consultaHistoria", "consultaHistoria_controllers":ConsultaHistoricoUsuarioControllers.as_view("consultaHistoria_api"),
 "actualizarSalida": "/actualizarSalida", "actualizarSalida_controllers":ActualizarSalidaControllers.as_view("actualizarSalida_api"),
 "actualizarProducto": "/actualizarProducto", "actualizarProducto_controllers":ActualizarProductoControllers.as_view("actualizarProducto_api"),
+"facturacio": "/facturacion", "facturacion_controllers":FacturacionControllers.as_view("facturacion_api"),
 "buscarProductos": "/buscarProductos", "buscarProductos_controllers":ProductosBuscarControllers.as_view("buscarProductos_api")
 }
