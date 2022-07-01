@@ -28,6 +28,30 @@ def send_correo(usuario,correo,cod):
     html_content = MIMEText(html_template, 'html')
 
 
+def send_info(usuario,correo,mensaje):
+
+    # ADMIN de correos
+    gmail_admin = 'jeicob28@gmail.com'
+    gmail_password = 'xuvmpuaeuqkzfden'
+    sent_from = gmail_admin
+    #code = random()
+    mj = mensaje
+    # to = ['sierreitor17@gmail.com', 'jeicob28@yahoo.com']
+    to = correo
+    subject = 'Super Importante'
+
+    html_template = f"""
+                <h1>Geekflare</h1>
+
+                <p>Hola {usuario},</p>
+                <p>este correo es con fines informativos</p>
+                <h3>{mj}</h3>
+                <p>No responda este mensaje</p>
+                """
+
+    # html_content = MIMEText(html_template.format(usuario.split("@")[0]), 'html')
+    html_content = MIMEText(html_template, 'html')
+
     try:
         print("CONECTANDO...")
         server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
