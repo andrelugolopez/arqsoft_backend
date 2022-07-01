@@ -707,5 +707,7 @@ class TokenContrasenaControllers(MethodView):
 class FacturacionControllers(MethodView):
     def post(self):
         content = request.get_json()
+
+        #korreo.send_send_info(usuario,correo,mensaje)
         print(content)
         return jsonify({'Status':'dato para facturacion'}), 200
